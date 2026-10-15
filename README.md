@@ -6,7 +6,7 @@ A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic lo
 
 ## Install
 
-1. Download `VerdantArch_128x.mcpack` and double-click it — Minecraft imports it automatically.
+1. Download `USTP_128x.mcpack` and double-click it — Minecraft imports it automatically.
 2. Settings → Global Resources → activate the pack.
 3. Turn on Vibrant Visuals (Video settings) or RTX (supported GPU required) to see the PBR lighting.
 
@@ -24,13 +24,13 @@ All textures are generated procedurally — no external dependencies, just Node.
 node gen.js
 ```
 
-This regenerates `VerdantArch/` and `preview.png`. Palettes live in the `P` and `WOOD` objects at the top of `gen.js`; block recipes are in the "build" section. To repackage, zip the *contents* of `VerdantArch/` and rename the `.zip` to `.mcpack`.
+This regenerates `USTP/` and `preview.png`. Palettes live in the `P` and `WOOD` objects at the top of `gen.js`; block recipes are in the "build" section. To repackage, zip the *contents* of `USTP/` and rename the `.zip` to `.mcpack`.
 
 ## Layout
 
 | Path | What |
 | --- | --- |
 | `gen.js` | Procedural generator (noise, PNG/TGA writers, block recipes) |
-| `VerdantArch/` | The resource pack source (`manifest.json`, `pack_icon.png`, `textures/blocks/…`) |
-| `VerdantArch_128x.mcpack` | Ready-to-install build |
+| `USTP/` | The resource pack source (`manifest.json`, `pack_icon.png`, `textures/blocks/…`) |
+| `USTP_128x.mcpack` | Ready-to-install build |
 | `preview.png` | Contact sheet of every texture |

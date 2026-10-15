@@ -1,11 +1,11 @@
 'use strict';
-// Verdant Arch 128x — procedural Bedrock texture pack generator (RTX + Vibrant Visuals PBR)
-// Run: node gen.js   → builds ./VerdantArch, ./VerdantArch.mcpack source tree and ./preview.png
+// USTP — Ultimate Survival Texture Pack: procedural Bedrock texture generator (128x, RTX + Vibrant Visuals PBR)
+// Run: node gen.js   → builds the ./USTP pack folder and ./preview.png
 const fs = require('fs'), path = require('path'), zlib = require('zlib'), crypto = require('crypto');
 
 const N = 128;
 const ROOT = __dirname;
-const OUT = path.join(ROOT, 'VerdantArch');
+const OUT = path.join(ROOT, 'USTP');
 const BLK = path.join(OUT, 'textures', 'blocks');
 
 // ---------------------------------------------------------------- math & noise
@@ -646,11 +646,11 @@ const uuid = str => { const h = crypto.createHash('md5').update(str).digest('hex
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   format_version: 2,
   header: {
-    name: 'Verdant Arch 128x',
+    name: 'Ultimate Survival Texture Pack (USTP) 128x',
     description: 'Natural survival textures with clean modern-architecture detailing. 128x · RTX & Vibrant Visuals PBR',
-    uuid: uuid('verdant-arch-header'), version: [1, 0, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [1, 1, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [1, 0, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [1, 1, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 

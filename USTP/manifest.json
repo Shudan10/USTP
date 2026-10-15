@@ -1,12 +1,12 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Verdant Arch 128x",
+    "name": "Ultimate Survival Texture Pack (USTP) 128x",
     "description": "Natural survival textures with clean modern-architecture detailing. 128x · RTX & Vibrant Visuals PBR",
     "uuid": "376f8420-8438-4994-a4c0-751c78fc4102",
     "version": [
       1,
-      0,
+      1,
       0
     ],
     "min_engine_version": [
@@ -21,7 +21,7 @@
       "uuid": "3a1aa39e-7c77-481a-a2af-6c877f639740",
       "version": [
         1,
-        0,
+        1,
         0
       ]
     }
