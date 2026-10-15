@@ -1,0 +1,8 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:texture_set": {
+    "color": "stick",
+    "metalness_emissive_roughness_subsurface": "stick_mers",
+    "heightmap": "stick_heightmap"
+  }
+}

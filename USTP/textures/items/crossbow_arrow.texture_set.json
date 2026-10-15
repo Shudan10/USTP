@@ -1,0 +1,8 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:texture_set": {
+    "color": "crossbow_arrow",
+    "metalness_emissive_roughness_subsurface": "crossbow_arrow_mers",
+    "heightmap": "crossbow_arrow_heightmap"
+  }
+}

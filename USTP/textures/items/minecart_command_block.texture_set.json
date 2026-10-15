@@ -1,0 +1,8 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:texture_set": {
+    "color": "minecart_command_block",
+    "metalness_emissive_roughness_subsurface": "minecart_command_block_mers",
+    "heightmap": "minecart_command_block_heightmap"
+  }
+}

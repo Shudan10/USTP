@@ -1,0 +1,8 @@
+{
+  "format_version": "1.21.30",
+  "minecraft:texture_set": {
+    "color": "copper_hoe",
+    "metalness_emissive_roughness_subsurface": "copper_hoe_mers",
+    "heightmap": "copper_hoe_heightmap"
+  }
+}
