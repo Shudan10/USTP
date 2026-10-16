@@ -24,5 +24,6 @@
   "caves": "A",
   "discs": "A",
   "planks": "F",
-  "cut_sandstone": "S"
+  "cut_sandstone": "S",
+  "polished_deepslate": "X"
 }
