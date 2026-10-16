@@ -432,7 +432,7 @@ save(dirt(new Tex(), DIRT).bake(), 'dirt');
 const GS = S();
 save(grassTop(new Tex(), GS), 'grass_top');
 save(grassSide(GS + 1, DIRT, false), 'grass_side', { tga: true, mask: true });
-save(grassSide(GS + 1, DIRT, true), 'grass_side_carried', { pbr: false });
+save(grassSide(GS + 1, DIRT, true), 'grass_side_carried');
 save(sand(new Tex(), S(), P.sand).bake(0.4), 'sand');
 save(cobble(new Tex(), S(), P.stone, { k: 16, gap: 0.1, pebbleCols: [['#6a6662', '#8e8a85'], ['#7d746b', '#a39a8e'], ['#55524f', '#787470'], ['#8c8681', '#b0aaa3'], ['#6d5f52', '#8f7f70']] }).bake(), 'gravel');
 const COB = S();
@@ -487,9 +487,9 @@ for (const [k, w] of Object.entries(WOOD)) {
   save(lt, 'leaves_' + k, { tga: true });
   const carriedTint = hex({ oak: '#59ae30', spruce: '#619961', birch: '#80a755', big_oak: '#4a9a25' }[k]);
   const car = lt.clone(); car.each((x, y, i) => car.col(i, tint(car.get(i), carriedTint)));
-  save(car, 'leaves_' + k + '_carried', { tga: true, pbr: false });
+  save(car, 'leaves_' + k + '_carried', { tga: true });
   const op = lt.clone(); op.each((x, y, i) => { if (op.a[i] === 0) { op.col(i, mul(op.get(i), 0.4)); op.a[i] = 1; } });
-  save(op, 'leaves_' + k + '_opaque', { pbr: false });
+  save(op, 'leaves_' + k + '_opaque');
 }
 
 // Masonry & modern architecture

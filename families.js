@@ -126,8 +126,8 @@ for (const [name, kind] of LEAVES) {
   const main = v.sat < 0.08 ? base : colourTo(base.clone(), v.c);
   saveLike(main, name, { cutout: true });
   const op = main.clone(); op.each((x, y, i) => { if (op.a[i] === 0) { op.col(i, mul(op.get(i), 0.4)); op.a[i] = 1; } });
-  saveLike(op, name + '_opaque', { pbr: false });
-  const cv = vanilla(name + '_carried'); if (cv) saveLike(colourTo(base.clone(), cv.c), name + '_carried', { pbr: false, cutout: true });
+  saveLike(op, name + '_opaque');
+  const cv = vanilla(name + '_carried'); if (cv) saveLike(colourTo(base.clone(), cv.c), name + '_carried', { cutout: true });
 }
 
 // ---------------------------------------------------------------- copper oxidation stages
