@@ -4,13 +4,20 @@ A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look. **Abou
 
 ## Install
 
-1. Download `USTP_128x.mcpack` from the [latest release](../../releases/latest) and double-click it. On lower-memory PCs, phones or consoles use `USTP_64x_Lite.mcpack` instead (same look at half resolution).
-2. Settings → Global Resources → My Packs → activate **Ultimate Survival Texture Pack (USTP) 128x**.
-3. Settings → Video → Graphics Mode → **Vibrant Visuals** (or **Ray Tracing** on an RTX-capable GPU) to see the PBR lighting.
+1. Download `USTP.mcpack` from the [latest release](../../releases/latest) and double-click it. One download covers every device.
+2. Settings → Global Resources → My Packs → activate **Ultimate Survival Texture Pack (USTP)**.
+3. Click the gear icon on the pack to pick a quality level:
+   - **128x Full quality**: PC, Xbox Series X|S, PS5
+   - **64x Balanced**: tablets and mid-range devices
+   - **32x Performance**: phones, Nintendo Switch, Xbox One, PS4
+
+   Each level declares how much memory it needs, so the game can steer lower-memory devices to the lighter levels.
+4. Settings → Video → Graphics Mode → **Vibrant Visuals** (or **Ray Tracing** on an RTX-capable GPU) to see the PBR lighting.
 
 ## Troubleshooting
 
-- **Crash when opening a world:** lower Render Distance (Settings → Video) to 32 chunks or less, and make sure only one big texture pack is active in Global Resources. If it still crashes, use the 64x Lite pack.
+- **Crash when opening a world:** lower Render Distance (Settings → Video) to 32 chunks or less, make sure only one big texture pack is active, and switch the pack to 64x or 32x with its gear icon.
+- **RTX** only runs on Windows PCs with a ray-tracing GPU; consoles use regular graphics or Vibrant Visuals.
 
 ## What's in it
 
@@ -90,7 +97,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 - `batch8.js` and `batch9.js` redesign everything that was left, in Clean Modern, sampling each variant's colours from vanilla.
 - `batch2.js` – `batch7.js` build the style-picked families in the style recorded in `choices.json` (A Clean Modern, B Natural Realistic, C Bold). `node batchN.js --samples=choices` renders the A/B/C comparison sheets used to pick them.
 - `remaster.js` fills in every texture not listed in `.handmade.json`. `--only=<substring>` limits it to matching paths, `--sheet=<file.png>` writes a contact sheet.
-- `pack.js` zips `USTP/` into `USTP_128x.mcpack`; `node pack.js --lite` builds `USTP_64x_Lite.mcpack`, a half-resolution copy that installs as its own pack.
+- `pack.js` builds `USTP.mcpack`: the full 128x textures plus 64x and 32x subpacks (every texture downsampled), each with a memory tier.
 
 ## Layout
 
@@ -105,6 +112,6 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | `choices/` | A/B/C comparison sheets |
 | `remaster.js` | Vanilla → USTP remaster (Scale2x, Kuwahara, PBR) |
 | `imageio.js` | Dependency-free PNG/TGA reading and writing |
-| `pack.js` | Builds the `.mcpack` files (full and `--lite`) |
+| `pack.js` | Builds `USTP.mcpack` with 128x / 64x / 32x subpacks |
 | `USTP/` | Built resource pack source |
 | `preview*.png` | Contact sheets |

@@ -1,13 +1,20 @@
 'use strict';
-// Packs ./USTP into a .mcpack (a plain zip with manifest.json at the root).
-//   node pack.js          → USTP_128x.mcpack
-//   node pack.js --lite   → USTP_64x_Lite.mcpack: every texture halved, installs as a separate pack
+// Packs ./USTP into one USTP.mcpack (a plain zip with manifest.json at the root) that carries three
+// quality levels as Bedrock subpacks, chosen in the pack's settings (gear icon):
+//   128x Full (base textures) · 64x Balanced · 32x Performance
+// The 64x / 32x subpacks hold every texture downsampled; when one is selected its files override the base.
+// Each subpack declares a memory_tier so the game can steer lower-memory devices to the lighter levels.
+//   node pack.js   → USTP.mcpack
 // Images are stored as-is (already compressed); JSON is deflated.
-const fs = require('fs'), path = require('path'), zlib = require('zlib'), crypto = require('crypto');
+const fs = require('fs'), path = require('path'), zlib = require('zlib');
 const { readImage, pngBuf, tgaBuf, isTintMask } = require('./imageio');
 
-const LITE = process.argv.includes('--lite');
-const SRC = path.join(__dirname, 'USTP'), DEST = path.join(__dirname, LITE ? 'USTP_64x_Lite.mcpack' : 'USTP_128x.mcpack');
+const SRC = path.join(__dirname, 'USTP'), DEST = path.join(__dirname, 'USTP.mcpack');
+const SUBPACKS = [   // ascending memory; folder_name is the path under subpacks/
+  { folder_name: 'performance_32x', name: '32x Performance: phones, Switch and older consoles', memory_tier: 1, halvings: 2 },
+  { folder_name: 'balanced_64x', name: '64x Balanced: tablets and mid-range devices', memory_tier: 2, halvings: 1 },
+  { folder_name: 'full_128x', name: '128x Full quality: PC, Xbox Series X|S and PS5', memory_tier: 4, halvings: 0 },
+];
 const walk = d => fs.readdirSync(d, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]);
 
 // 2× box downsample; premultiplied so cutout edges don't pick up the black behind them,
@@ -25,30 +32,19 @@ function halve(img, straight) {
   }
   return { w: W, h: H, data: out };
 }
-function liteImage(file, data) {
-  const img = readImage(file), half = halve(img, file.endsWith('.tga') && isTintMask(img));
-  if (file.endsWith('.tga')) return tgaBuf(half.w, half.h, half.data);
-  const ch = { 2: 3, 6: 4 }[data[25]] || 3, px = new Uint8Array(half.w * half.h * ch);
-  for (let i = 0; i < half.w * half.h; i++) for (let c = 0; c < ch; c++) px[i * ch + c] = half.data[i * 4 + c];
-  return pngBuf(half.w, half.h, ch, px);
-}
-function liteManifest(data) {
-  const m = JSON.parse(data), id = s => { const h = crypto.createHash('md5').update(s).digest('hex'); return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`; };
-  m.header.name = 'Ultimate Survival Texture Pack (USTP) 64x Lite';
-  m.header.description = 'Lighter 64x build of USTP for lower-memory devices. ' + m.header.description;
-  m.header.uuid = id('ustp-lite-header');
-  m.modules.forEach((mod, i) => { mod.uuid = id('ustp-lite-module-' + i); });
-  return Buffer.from(JSON.stringify(m, null, 2));
+function downscale(file, data, times) {
+  let img = readImage(file); const straight = file.endsWith('.tga') && isTintMask(img);
+  for (let k = 0; k < times && img.w > 1 && img.h > 1; k++) img = halve(img, straight);
+  if (file.endsWith('.tga')) return tgaBuf(img.w, img.h, img.data);
+  const ch = { 2: 3, 6: 4 }[data[25]] || 3, px = new Uint8Array(img.w * img.h * ch);
+  for (let i = 0; i < img.w * img.h; i++) for (let c = 0; c < ch; c++) px[i * ch + c] = img.data[i * 4 + c];
+  return pngBuf(img.w, img.h, ch, px);
 }
 
 const parts = [], central = [];
 let offset = 0;
-for (const file of walk(SRC)) {
-  const rel = path.relative(SRC, file).split(path.sep).join('/'), name = Buffer.from(rel);
-  let data = fs.readFileSync(file);
-  if (LITE && rel === 'manifest.json') data = liteManifest(data);
-  else if (LITE && rel.startsWith('textures/') && /\.(png|tga)$/.test(rel)) data = liteImage(file, data);
-  const crc = zlib.crc32(data), deflate = /\.(json|txt|lang)$/.test(file), body = deflate ? zlib.deflateRawSync(data, { level: 9 }) : data;
+function add(rel, data) { // rel ending in '/' is a directory entry
+  const name = Buffer.from(rel), crc = zlib.crc32(data), deflate = /\.(json|txt|lang)$/.test(rel), body = deflate ? zlib.deflateRawSync(data, { level: 9 }) : data;
   const h = Buffer.alloc(30);
   h.writeUInt32LE(0x04034b50, 0); h.writeUInt16LE(20, 4); h.writeUInt16LE(0x0800, 6); h.writeUInt16LE(deflate ? 8 : 0, 8);
   h.writeUInt16LE(0, 10); h.writeUInt16LE(0x21, 12); // 1980-01-01, keeps builds reproducible
@@ -57,11 +53,26 @@ for (const file of walk(SRC)) {
   const c = Buffer.alloc(46);
   c.writeUInt32LE(0x02014b50, 0); c.writeUInt16LE(20, 4); c.writeUInt16LE(20, 6); c.writeUInt16LE(0x0800, 8); c.writeUInt16LE(deflate ? 8 : 0, 10);
   c.writeUInt16LE(0, 12); c.writeUInt16LE(0x21, 14); c.writeUInt32LE(crc, 16); c.writeUInt32LE(body.length, 20); c.writeUInt32LE(data.length, 24);
-  c.writeUInt16LE(name.length, 28); c.writeUInt32LE(offset, 42);
+  c.writeUInt16LE(name.length, 28); c.writeUInt32LE(offset, 42); if (rel.endsWith('/')) c.writeUInt32LE(0x10, 38);
   central.push(c, name);
   offset += h.length + name.length + body.length;
+}
+
+const files = walk(SRC);
+for (const file of files) {
+  const rel = path.relative(SRC, file).split(path.sep).join('/');
+  let data = fs.readFileSync(file);
+  if (rel === 'manifest.json') { const m = JSON.parse(data); m.subpacks = SUBPACKS.map(({ folder_name, name, memory_tier }) => ({ folder_name, name, memory_tier })); data = Buffer.from(JSON.stringify(m, null, 2)); }
+  add(rel, data);
+}
+const textures = files.filter(f => /\.(png|tga)$/.test(f) && path.relative(SRC, f).startsWith('textures'));
+for (const sp of SUBPACKS) {
+  add(`subpacks/${sp.folder_name}/`, Buffer.alloc(0));
+  if (!sp.halvings) continue;   // the full level uses the base textures as they are
+  for (const file of textures) add(`subpacks/${sp.folder_name}/${path.relative(SRC, file).split(path.sep).join('/')}`, downscale(file, fs.readFileSync(file), sp.halvings));
+  console.log(`  ${sp.folder_name}: ${textures.length} textures`);
 }
 const cd = Buffer.concat(central), end = Buffer.alloc(22), count = central.length / 2;
 end.writeUInt32LE(0x06054b50, 0); end.writeUInt16LE(count, 8); end.writeUInt16LE(count, 10); end.writeUInt32LE(cd.length, 12); end.writeUInt32LE(offset, 16);
 fs.writeFileSync(DEST, Buffer.concat([...parts, cd, end]));
-console.log(`Packed ${count} files → ${path.basename(DEST)} (${(fs.statSync(DEST).size / 1048576).toFixed(1)} MB)`);
+console.log(`Packed ${count} entries → ${path.basename(DEST)} (${(fs.statSync(DEST).size / 1048576).toFixed(1)} MB)`);
