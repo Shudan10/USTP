@@ -649,9 +649,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP)',
     description: 'Clean modern survival textures with RTX & Vibrant Visuals PBR. Pick 128x, 64x or 32x in the pack settings.',
-    uuid: uuid('verdant-arch-header'), version: [4, 5, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [4, 6, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 5, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 6, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 

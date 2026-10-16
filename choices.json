@@ -26,5 +26,6 @@
   "planks": "X",
   "cut_sandstone": "S",
   "polished_deepslate": "X",
-  "oak_tone": 1
+  "oak_tone": 1,
+  "chest": "B"
 }
