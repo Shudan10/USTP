@@ -14,5 +14,9 @@
   "materials": "A",
   "ranged": "A",
   "tools": "A",
-  "ocean": "A"
+  "ocean": "A",
+  "nature": "A",
+  "end": "A",
+  "brewing": "A",
+  "vehicles": "B"
 }

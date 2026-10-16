@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "moss_block",
-    "metalness_emissive_roughness_subsurface": "moss_block_mers",
+    "metalness_emissive_roughness": "moss_block_mer",
     "heightmap": "moss_block_heightmap"
   }
 }
