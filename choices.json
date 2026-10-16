@@ -10,5 +10,9 @@
   "farm": "A",
   "lights": "B",
   "redstone": "C",
-  "ice": "C"
+  "ice": "C",
+  "materials": "A",
+  "ranged": "A",
+  "tools": "A",
+  "ocean": "A"
 }
