@@ -245,7 +245,7 @@ const SAMPLES = {
 const ITEM_STYLE = { A: 'modern', B: 'realistic', C: 'bold' };
 
 const samplesDir = (process.argv.find(a => a.startsWith('--samples=')) || '').split('=')[1];
-if (samplesDir) {
+if (samplesDir && require.main === module) {
   fs.mkdirSync(samplesDir, { recursive: true });
   sheet(path.join(samplesDir, 'choices_plants.png'), ['A', 'B', 'C'].map(key => ({ key, tiles: SAMPLES.plants.map((name, k) => {
     const rgba = it.render(name, PLANTS[name](), 300 + k * 11, { style: ITEM_STYLE[key], write: false, rimW: 1 });   // thin stems and blades: keep the outline to 1px

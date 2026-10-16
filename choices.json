@@ -6,5 +6,9 @@
   "plants": "A",
   "doors": "A",
   "workstations": "B",
-  "cave_stones": "C"
+  "cave_stones": "C",
+  "farm": "A",
+  "lights": "B",
+  "redstone": "C",
+  "ice": "C"
 }
