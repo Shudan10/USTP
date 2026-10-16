@@ -95,7 +95,7 @@ function bamboo(part, s) {
   const t = new Tex();
   if (part === 'block' || part === 'stripped') return t.each((x, y, i) => { const lx = x % 32, curve = Math.sin(Math.PI * (lx + 0.5) / 32), node = (y + (x >> 5) * 17) % 48 < 3; t.col(i, grad(part === 'block' ? pal : strip, 0.3 + curve * 0.55 + (node ? -0.2 : 0))); t.h[i] = 0.4 + curve * 0.4 + (node ? 0.1 : 0); t.r[i] = 0.5; });
   if (part === 'block_top' || part === 'stripped_top') return t.each((x, y, i) => { const r = Math.hypot(((x % 32) - 15.5), ((y % 32) - 15.5)); t.col(i, grad(part === 'block_top' ? pal : strip, r < 9 ? 0.75 : r < 14 ? 0.35 : 0.55)); t.h[i] = r < 14 ? 0.6 : 0.4; t.r[i] = 0.5; });
-  if (part === 'planks') return t.each((x, y, i) => { const lx = x % 16; t.col(i, grad(plank, 0.3 + Math.sin(Math.PI * (lx + 0.5) / 16) * 0.5 + (fbm(x, y, 2, 16, 3, s) - 0.5) * 0.2)); t.h[i] = 0.5; t.r[i] = 0.6; if (y % 64 === 0) t.col(i, mul(t.get(i), 0.5)); });
+  if (part === 'planks') return g.planks(t, s, plank);   // follows the chosen plank style
   if (part === 'mosaic') return t.each((x, y, i) => { const cell = ((x >> 5) + (y >> 5)) % 2, lx = cell ? x % 32 : y % 32; t.col(i, grad(plank, 0.3 + Math.sin(Math.PI * ((lx % 8) + 0.5) / 8) * 0.5)); t.h[i] = 0.5; t.r[i] = 0.6; if (edgeDist(x, y, 32) < 1) t.col(i, mul(t.get(i), 0.5)); });
 }
 function copperExtra(stage, part, s) {

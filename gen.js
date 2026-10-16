@@ -278,6 +278,9 @@ function bricks(t, s, o) {
   });
 }
 function planks(t, s, pal) {
+  // a plank style picked in choices.json (see planks.js) replaces the original boards everywhere planks are used
+  const ps = require('./planks.js');
+  if (ps.chosenStyle()) return ps.plankBlock(t, s, pal, null, grad);
   const bh = N / 4;
   return t.each((x, y, i) => {
     const row = Math.floor(y / bh), ly = y % bh, off = Math.floor(h2(s, row, 0) * N), xx = (x + off) % N, seg = Math.floor(xx / 64), lx = xx % 64;
@@ -645,9 +648,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP) 128x',
     description: 'Every block and item redone at 128x: natural textures with clean modern-architecture detailing. RTX & Vibrant Visuals PBR',
-    uuid: uuid('verdant-arch-header'), version: [4, 0, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [4, 1, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 0, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 1, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 

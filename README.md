@@ -98,6 +98,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | --- | --- |
 | `gen.js` | Signature blocks; also exports its generators |
 | `families.js` | Dye, wood and copper families |
+| `planks.js` | Plank styles; the one named in `choices.json` ("planks") is used for every plank block |
 | `items.js` | Modern weapons, tools and armor icons; the shared item renderer |
 | `batch2.js` – `batch9.js`, `choices.json` | Style-picked families and the picks themselves |
 | `choices/` | A/B/C comparison sheets |
