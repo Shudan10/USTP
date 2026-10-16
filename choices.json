@@ -23,7 +23,8 @@
   "badlands": "A",
   "caves": "A",
   "discs": "A",
-  "planks": "F",
+  "planks": "X",
   "cut_sandstone": "S",
-  "polished_deepslate": "X"
+  "polished_deepslate": "X",
+  "oak_tone": 1
 }

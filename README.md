@@ -86,7 +86,7 @@ git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks reso
 ```
 
 ```bash
-node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node batch8.js ../bedrock-samples/resource_pack && node batch9.js ../bedrock-samples/resource_pack && node sandcut.js && node stonecut.js && node polished.js && node remaster.js ../bedrock-samples/resource_pack && node pack.js
+node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node batch8.js ../bedrock-samples/resource_pack && node batch9.js ../bedrock-samples/resource_pack && node sandcut.js && node stonecut.js && node polished.js && node remaster.js ../bedrock-samples/resource_pack && node capitems.js && node pack.js
 ```
 
 On Windows, if git complains about long paths, add `-c core.longpaths=true` to the clone.
@@ -112,6 +112,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | `choices/` | A/B/C comparison sheets |
 | `remaster.js` | Vanilla → USTP remaster (Scale2x, Kuwahara, PBR) |
 | `imageio.js` | Dependency-free PNG/TGA reading and writing |
+| `capitems.js` | Caps every item icon at 64x so other add-ons' items still fit on the shared item sheet |
 | `pack.js` | Builds `USTP.mcpack` with 128x / 64x / 32x subpacks |
 | `USTP/` | Built resource pack source |
 | `preview*.png` | Contact sheets |

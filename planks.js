@@ -3,6 +3,7 @@
 // is used for every *_planks block by gen.js, families.js and batch9.js via plankBlock().
 //   A Smooth wide boards · B Chevron parquet · C Vertical slats · D Seamless veneer
 //   E Laminate flooring · F Wide-plank · G Narrow strip floor · H Basketweave parquet   (E–H: realistic, muted, matte)
+//   W Soft boards · X Clean veneer · Y Brushed oak · Z Long bevelled planks   (W–Z: soft figure, no hairlines)
 //   node planks.js --samples=<dir> [--rows=EFGH]   → comparison sheet across six woods
 const fs = require('fs'), path = require('path');
 const { pngBuf } = require('./imageio');
@@ -84,9 +85,60 @@ Object.assign(STYLES, {
     return { v, h, r: 0.6 };
   },
 });
+// ---- W–Z: soft-figure styles — broad grain instead of fine hairlines, bevelled joints instead of dark lines
+// smooth, tileable 2-D value noise over the 128 tile (cells across x and y)
+function vn2(x, y, cx, cy, s) {
+  const fx = x / N * cx, fy = y / N * cy, x0 = Math.floor(fx), y0 = Math.floor(fy); let tx = fx - x0, ty = fy - y0; tx = tx * tx * (3 - 2 * tx); ty = ty * ty * (3 - 2 * ty);
+  const X0 = ((x0 % cx) + cx) % cx, X1 = (X0 + 1) % cx, Y0 = ((y0 % cy) + cy) % cy, Y1 = (Y0 + 1) % cy;
+  return (h2(s, X0, Y0) * (1 - tx) + h2(s, X1, Y0) * tx) * (1 - ty) + (h2(s, X0, Y1) * (1 - tx) + h2(s, X1, Y1) * tx) * ty;
+}
+const softFigure = (x, y, s) => (vn2(x, y, 2, 12, s) - 0.5) * 0.22 + (vn2(x, y, 4, 24, s + 1) - 0.5) * 0.08;   // long soft streaks along the board
+const bevel = (d, w) => (d < w ? (1 - d / w) : 0);   // 1 at the joint, fading to 0 across w px
+function boards(x, y, s, rowH, lens) { // staggered boards → { board, lx, ly, len, dx (px to end joint), dy (px to side joint) }
+  const row = Math.floor(y / rowH), ly = y % rowH, off = Math.floor(h2(s, row, 12) * N), parts = lens[row % lens.length];
+  let xx = (x + off) % N, start = 0, b = 0;
+  while (b < parts.length - 1 && xx >= start + parts[b]) { start += parts[b]; b++; }
+  const lx = xx - start; return { board: row * 17 + b, lx, ly, len: parts[b], dx: Math.min(lx, parts[b] - 1 - lx), dy: Math.min(ly, rowH - 1 - ly) };
+}
+Object.assign(STYLES, {
+  W: (x, y, s) => { // soft boards: four wide boards, soft figure, light bevel joints
+    const b = boards(x, y, s, 32, [[128], [64, 64], [128], [80, 48]]), e = Math.max(bevel(b.dy, 3), bevel(b.dx, 3));
+    return { v: 0.55 + (h2(s, b.board, 1) - 0.5) * 0.1 + softFigure(x + b.board * 37, y, s) - e * 0.12 + (b.ly < 2 ? 0.04 : 0), h: 0.6 - e * 0.25, r: 0.45 };
+  },
+  X: (x, y, s) => { // clean veneer: two large horizontal panels with a smooth flame (cathedral) figure
+    const panel = y < 64 ? 0 : 1, ly = y % 64, d = ly - 32 + (vn2(x, y, 2, 2, s + 4) - 0.5) * 10, flame = Math.sin(d * d * 0.012 + x * 0.05 + panel * 2) * 0.07;
+    const e = bevel(Math.min(ly, 63 - ly), 2.5);
+    return { v: 0.56 + flame + (vn2(x, y, 2, 8, s + panel) - 0.5) * 0.12 - e * 0.1, h: 0.62 - e * 0.2, r: 0.35 };
+  },
+  Y: (x, y, s) => { // brushed oak: wire-brushed matte texture, soft V-groove joints
+    const b = boards(x, y, s + 3, 42, [[72, 56], [48, 80], [96, 32]]), vg = Math.max(bevel(b.dy, 4), bevel(b.dx, 3));
+    const brush = (h2(s, Math.floor(x / 6), y) - 0.5) * 0.035;
+    return { v: 0.54 + (h2(s, b.board, 1) - 0.5) * 0.1 + softFigure(x + b.board * 23, y, s + 5) * 0.8 + brush - vg * 0.16, h: 0.6 - vg * 0.35, r: 0.7 };
+  },
+  Z: (x, y, s) => { // long bevelled planks with a few soft knots
+    const b = boards(x, y, s + 9, 32, [[128], [96, 32], [128], [48, 80]]), e = Math.max(bevel(b.dy, 4), bevel(b.dx, 4));
+    let v = 0.55 + (h2(s, b.board, 1) - 0.5) * 0.12 + softFigure(x + b.board * 29, y, s + 7) * 0.6;
+    const kx = h2(s, b.board, 5) * b.len, ky = 8 + h2(s, b.board, 6) * 16, kd = Math.hypot((b.lx - kx) / 1.8, b.ly - ky);
+    if (h2(s, b.board, 7) < 0.5 && kd < 5) v -= 0.16 * (1 - kd / 5);
+    const top = b.ly < 4 ? (4 - b.ly) / 4 : 0, bottom = b.ly > 27 ? (b.ly - 27) / 4 : 0;
+    return { v: v + top * 0.08 - bottom * 0.14 - bevel(b.dx, 4) * 0.1, h: 0.62 - e * 0.35, r: 0.5 };
+  },
+});
 const MUTED = new Set(['E', 'F', 'G', 'H']);   // these styles desaturate the wood palette toward natural tones
-const STYLE_NAMES = { A: 'Smooth wide boards', B: 'Chevron parquet', C: 'Vertical slats', D: 'Seamless veneer', E: 'Laminate flooring', F: 'Wide-plank', G: 'Narrow strip floor', H: 'Basketweave parquet' };
-const mute = pal => pal.map(([p, c]) => { const l = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]; return [p, c.map(v => clamp(l + (v - l) * 0.6))]; });
+const STYLE_NAMES = { A: 'Smooth wide boards', B: 'Chevron parquet', C: 'Vertical slats', D: 'Seamless veneer', E: 'Laminate flooring', F: 'Wide-plank', G: 'Narrow strip floor', H: 'Basketweave parquet', W: 'Soft boards', X: 'Clean veneer', Y: 'Brushed oak', Z: 'Long bevelled planks' };
+// gentle muting: keeps each wood's warmth (0.6 made oak read grey in-game)
+const mute = pal => pal.map(([p, c]) => { const l = 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]; return [p, c.map(v => clamp(l + (v - l) * 0.85))]; });
+// oak tones offered for planks_oak (choices.json "oak_tone"); gen.js swaps the oak plank palette when one is set
+const hexC = h => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255];
+const P4 = (...cs) => cs.map((c, i) => [i / (cs.length - 1), hexC(c)]);
+const OAK_TONES = {
+  1: P4('#8c6436', '#a87e46', '#c2965a', '#d6ac6e'),   // honey oak
+  2: P4('#9c7a4e', '#b8935f', '#cfab74', '#e0c08a'),   // natural light oak
+  3: P4('#946020', '#b47a2c', '#cc923c', '#e2aa52'),   // golden oak
+  4: P4('#6e4a26', '#8a5e32', '#a47442', '#b88a54'),   // warm medium oak
+};
+const OAK_NAMES = { 1: 'Honey oak', 2: 'Natural light oak', 3: 'Golden oak', 4: 'Warm medium oak' };
+function oakTone() { try { const t = JSON.parse(fs.readFileSync(path.join(__dirname, 'choices.json'), 'utf8')).oak_tone; return t ? OAK_TONES[t] : null; } catch { return null; } }
 
 // paint a gen.js Tex with the given style and wood palette (gen's grad/palette format)
 function plankBlock(t, s, pal, style, grad) {
@@ -124,4 +176,4 @@ if (require.main === module) {
   fs.writeFileSync(out, pngBuf(W, H, 3, px));
   console.log('Wrote', out);
 }
-module.exports = { plankBlock, chosenStyle, STYLES, STYLE_NAMES };
+module.exports = { plankBlock, chosenStyle, oakTone, OAK_TONES, OAK_NAMES, STYLES, STYLE_NAMES };

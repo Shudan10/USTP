@@ -153,6 +153,7 @@ const WOOD = {
   big_oak: { plank: G('#2b1d0f', '#3d2a16', '#50391f', '#62492a'), ring: G('#3e2914', '#523720', '#664630', '#76553a'), bark: G('#1a130b', '#2b2014', '#3b2e1e', '#4a3c29') },
 };
 
+{ const tone = require('./planks.js').oakTone(); if (tone) WOOD.oak.plank = tone; }   // oak tone picked in choices.json
 let SEEDC = 1; const S = () => (SEEDC++) * 7919;
 
 // ---------------------------------------------------------------- generators
@@ -648,9 +649,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP)',
     description: 'Clean modern survival textures with RTX & Vibrant Visuals PBR. Pick 128x, 64x or 32x in the pack settings.',
-    uuid: uuid('verdant-arch-header'), version: [4, 4, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [4, 5, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 4, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 5, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 
