@@ -79,7 +79,10 @@ const MAT = {
   glass: { kind: 'visor', base: '#1d2a36', dark: '#05080c', light: '#9fd8ff', metal: 0, rough: 0.04 },
   rubber: { kind: 'leather', base: '#26221f', dark: '#0a0908', light: '#5d5752', metal: 0, rough: 0.9 },
 };
-for (const m of Object.values(MAT)) for (const k of ['base', 'dark', 'light', 'sheen', 'glow']) if (m[k]) m[k] = hex(m[k]);
+// colours given as '#rrggbb' become [r, g, b]; used for MAT and for inline materials
+function mk(m) { for (const k of ['base', 'dark', 'light', 'sheen', 'glow']) if (typeof m[k] === 'string') m[k] = hex(m[k]); return m; }
+for (const m of Object.values(MAT)) mk(m);
+const matOf = p => (typeof p.mat === 'string' ? MAT[p.mat] : p.mat);
 
 const L = norm([-0.55, -0.62, 0.56]), HV = norm([L[0], L[1], L[2] + 1]);
 // reflected-environment brightness: bright sky, dark horizon band, mid ground — the "chrome" read
@@ -110,6 +113,12 @@ function shade(mat, P, n, part, edge, seed) {
   } else if (mat.kind === 'visor') {
     const e = env(ry * 0.8 + (P.y - 60) / 60);
     c = add(mix(mat.dark, mat.base, 0.5), mat.light, e * 0.45 + Math.pow(nh, 30));
+  } else if (mat.kind === 'organic') {
+    const base = part.paint ? part.paint(P) : mat.base, wrapL = clamp((n[0] * L[0] + n[1] * L[1] + n[2] * L[2] + 0.35) / 1.35);
+    const t = (fbm(P.x * (mat.grain || 0.5), P.y * (mat.grain || 0.5), seed) - 0.5) * (mat.mottle ?? 0.25);
+    c = scale(mix(mat.dark, base, clamp(0.25 + 0.75 * wrapL + t)), 0.55 + 0.6 * wrapL);
+    c = add(c, mat.light, Math.pow(nh, mat.gloss || 20) * (mat.spec ?? 0.35) + (edge ? 0.1 : 0));
+    emis = (mat.emis || 0) * (0.6 + 0.4 * wrapL);
   } else { // wood, stone, leather: matte with grain
     let t;
     if (mat.kind === 'wood') t = fbm(part.axis === 'u' ? P.u * 0.06 : P.x * 0.6, part.axis === 'u' ? P.v * 1.3 : P.y * 0.06, seed) * 0.8 + 0.1;
@@ -127,7 +136,9 @@ const PROFILE = {
   bevel: (k, p) => sstep(0, p.bw || 2.5, k) * (p.bw || 2.5) * 0.8,
   round: (k, p) => { const r = p.bw || 4, q = Math.min(k, r); return Math.sqrt(Math.max(0, r * r - (r - q) * (r - q))); },
 };
-function render(name, parts, seed) {
+// style: 'modern' (soft light, thin rim) · 'realistic' (surface detail, softer rim) · 'bold' (toon bands, saturated, thick outline)
+function render(name, parts, seed, opts = {}) {
+  const style = opts.style || 'modern';
   const n = M * M, glow = new Uint8Array(n), layer = new Int16Array(n).fill(-1), H = new Float32Array(n), K = new Float32Array(n), dark = new Float32Array(n), edgeF = new Uint8Array(n);
   for (let sy = 0; sy < M; sy++) for (let sx = 0; sx < M; sx++) {
     const x = (sx + 0.5) / SS, y = (sy + 0.5) / SS, P = { x, y, u: ((x - 64) - (y - 64)) / Math.SQRT2, v: ((x - 64) + (y - 64)) / Math.SQRT2 };
@@ -137,7 +148,7 @@ function render(name, parts, seed) {
       const i = sy * M + sx; layer[i] = k; K[i] = -d;
       let h = (p.z || 2) + PROFILE[p.profile || 'bevel'](-d, p);
       if (p.form) h += p.form(P);
-      if (p.deco) { const r = p.deco(P, -d); if (r) { h += r.dh || 0; dark[i] = r.dark || 0; edgeF[i] = r.edge ? 1 : 0; if (r.seam && MAT[p.mat].glow) glow[i] = 1; } }
+      if (p.deco) { const r = p.deco(P, -d); if (r) { h += r.dh || 0; dark[i] = r.dark || 0; edgeF[i] = r.edge ? 1 : 0; if (r.seam && matOf(p).glow) glow[i] = 1; } }
       if (p.edgeBand && -d < p.edgeBand) edgeF[i] = 1;
       H[i] = h; break;
     }
@@ -149,8 +160,17 @@ function render(name, parts, seed) {
     const gx = (hAt(sx + 1, sy) - hAt(sx - 1, sy)) * SS / 2, gy = (hAt(sx, sy + 1) - hAt(sx, sy - 1)) * SS / 2;
     const nrm = norm([-gx * 0.6, -gy * 0.6, 1]), p = parts[layer[i]];
     const x = (sx + 0.5) / SS, y = (sy + 0.5) / SS, P = { x, y, u: ((x - 64) - (y - 64)) / Math.SQRT2, v: ((x - 64) + (y - 64)) / Math.SQRT2 };
-    const s = shade(MAT[p.mat], P, nrm, p, edgeF[i], seed + layer[i] * 101);
-    if (glow[i]) { s.c = MAT[p.mat].glow; s.emis = 1; s.metal = 0; dark[i] = 0; }
+    const mat = matOf(p), s = shade(mat, P, nrm, p, edgeF[i], seed + layer[i] * 101);
+    if (style === 'realistic') { // richer surface detail, slightly muted natural colour
+      s.c = scale(s.c, 1 + (fbm(P.x * 0.45, P.y * 0.45, seed + 77) - 0.5) * 0.35 + (fbm(P.x * 1.6, P.y * 1.6, seed + 79) - 0.5) * 0.18 + (h2(seed + 78, sx, sy) - 0.5) * 0.08);
+      const l = 0.299 * s.c[0] + 0.587 * s.c[1] + 0.114 * s.c[2]; s.c = s.c.map(v => l + (v - l) * 0.85);
+    }
+    if (style === 'bold') { // cel shading: quantise brightness against the material's base colour, then push saturation
+      const lum = c => 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2], b = p.paint ? p.paint(P) : mat.base, r = lum(s.c) / Math.max(0.04, lum(b));
+      const band = r > 1.35 ? 1.45 : r > 0.95 ? 1.1 : r > 0.62 ? 0.82 : 0.55, q = scale(b, band), L2 = lum(q);
+      s.c = [L2 + (q[0] - L2) * 1.35, L2 + (q[1] - L2) * 1.35, L2 + (q[2] - L2) * 1.35];
+    }
+    if (glow[i]) { s.c = mat.glow; s.emis = 1; s.metal = 0; dark[i] = 0; }
     const k = 1 - dark[i];
     col[i * 3] = s.c[0] * k; col[i * 3 + 1] = s.c[1] * k; col[i * 3 + 2] = s.c[2] * k;
     mer[i * 3] = s.metal; mer[i * 3 + 1] = s.emis; mer[i * 3 + 2] = s.rough;
@@ -168,18 +188,23 @@ function render(name, parts, seed) {
     rgba[o] = Math.round(clamp(r / a) * 255); rgba[o + 1] = Math.round(clamp(g / a) * 255); rgba[o + 2] = Math.round(clamp(b / a) * 255); rgba[o + 3] = 255;
     mers[o] = Math.round(m0 / a * 255); mers[o + 1] = Math.round(m1 / a * 255); mers[o + 2] = Math.round(m2 / a * 255); mers[o + 3] = 255;
   }
-  // crisp dark rim on the silhouette so icons read at small sizes
+  // dark rim on the silhouette so icons read at small sizes (thick ink line for the bold style)
+  const rimW = style === 'bold' ? 3 : 1, rimK = style === 'bold' ? 0.12 : style === 'realistic' ? 0.72 : 0.55, solid = rgba.map((v, k) => (k % 4 === 3 ? v : 0));
+  const out = (xx, yy) => xx < 0 || yy < 0 || xx >= N || yy >= N || !solid[(yy * N + xx) * 4 + 3];
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const o = (y * N + x) * 4; if (!rgba[o + 3]) continue;
-    const out = (xx, yy) => xx < 0 || yy < 0 || xx >= N || yy >= N || !rgba[(yy * N + xx) * 4 + 3];
-    if (out(x - 1, y) || out(x + 1, y) || out(x, y - 1) || out(x, y + 1)) for (let c = 0; c < 3; c++) rgba[o + c] = Math.round(rgba[o + c] * 0.55);
+    let near = false;
+    for (let d = 1; d <= rimW && !near; d++) near = out(x - d, y) || out(x + d, y) || out(x, y - d) || out(x, y + d);
+    if (near) for (let c = 0; c < 3; c++) rgba[o + c] = Math.round(rgba[o + c] * rimK);
   }
+  if (opts.write === false) return rgba;
   fs.mkdirSync(path.dirname(path.join(OUT, name)), { recursive: true });
   writeFile(path.join(OUT, name + '.png'), pngBuf(N, N, 4, rgba));
   writeFile(path.join(OUT, name + '_mers.png'), pngBuf(N, N, 4, mers));
   const base = path.basename(name);
   writeFile(path.join(OUT, name + '.texture_set.json'), JSON.stringify({ format_version: '1.21.30', 'minecraft:texture_set': { color: base, metalness_emissive_roughness_subsurface: base + '_mers' } }, null, 2));
   made.push({ name, rgba });
+  return rgba;
 }
 const made = [];
 
@@ -308,6 +333,7 @@ function boots(t) {
   ];
 }
 
+function main() {
 const TIERS = ['wood', 'stone', 'copper', 'iron', 'gold', 'diamond', 'netherite'];
 const ARMOR = ['chainmail', 'copper', 'iron', 'gold', 'diamond', 'netherite'];
 let seed = 1;
@@ -343,3 +369,7 @@ const listed = new Set(fs.existsSync(HANDMADE) ? JSON.parse(fs.readFileSync(HAND
 for (const m of made) listed.add('items/' + m.name);
 fs.writeFileSync(HANDMADE, JSON.stringify([...listed], null, 1));
 console.log(`Rendered ${made.length} modern equipment icons.`);
+}
+
+if (require.main === module) main();
+module.exports = { N, render, mk, MAT, made, sdCircle, sdEllipse, sdBox, sdSeg, sdPoly, mirror, cell, fbm, h2, hex, mix, clamp, sstep };
