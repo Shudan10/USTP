@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "netherite_hoe",
-    "metalness_emissive_roughness_subsurface": "netherite_hoe_mers",
-    "heightmap": "netherite_hoe_heightmap"
+    "metalness_emissive_roughness_subsurface": "netherite_hoe_mers"
   }
 }

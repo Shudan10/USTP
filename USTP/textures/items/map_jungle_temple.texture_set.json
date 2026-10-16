@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "map_jungle_temple",
-    "metalness_emissive_roughness_subsurface": "map_jungle_temple_mers",
-    "heightmap": "map_jungle_temple_heightmap"
+    "metalness_emissive_roughness_subsurface": "map_jungle_temple_mers"
   }
 }

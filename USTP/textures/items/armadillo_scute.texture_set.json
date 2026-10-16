@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "armadillo_scute",
-    "metalness_emissive_roughness_subsurface": "armadillo_scute_mers",
-    "heightmap": "armadillo_scute_heightmap"
+    "metalness_emissive_roughness_subsurface": "armadillo_scute_mers"
   }
 }

@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "fish_clownfish_raw",
-    "metalness_emissive_roughness_subsurface": "fish_clownfish_raw_mers",
-    "heightmap": "fish_clownfish_raw_heightmap"
+    "metalness_emissive_roughness_subsurface": "fish_clownfish_raw_mers"
   }
 }

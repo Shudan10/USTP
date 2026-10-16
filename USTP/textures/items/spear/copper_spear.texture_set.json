@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "copper_spear",
-    "metalness_emissive_roughness_subsurface": "copper_spear_mers",
-    "heightmap": "copper_spear_heightmap"
+    "metalness_emissive_roughness_subsurface": "copper_spear_mers"
   }
 }

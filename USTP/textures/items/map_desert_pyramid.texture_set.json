@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "map_desert_pyramid",
-    "metalness_emissive_roughness_subsurface": "map_desert_pyramid_mers",
-    "heightmap": "map_desert_pyramid_heightmap"
+    "metalness_emissive_roughness_subsurface": "map_desert_pyramid_mers"
   }
 }

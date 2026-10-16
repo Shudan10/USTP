@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "harness_black",
-    "metalness_emissive_roughness_subsurface": "harness_black_mers",
-    "heightmap": "harness_black_heightmap"
+    "metalness_emissive_roughness_subsurface": "harness_black_mers"
   }
 }

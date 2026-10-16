@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "melon_speckled",
-    "metalness_emissive_roughness_subsurface": "melon_speckled_mers",
-    "heightmap": "melon_speckled_heightmap"
+    "metalness_emissive_roughness_subsurface": "melon_speckled_mers"
   }
 }

@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "map_swamp_hut",
-    "metalness_emissive_roughness_subsurface": "map_swamp_hut_mers",
-    "heightmap": "map_swamp_hut_heightmap"
+    "metalness_emissive_roughness_subsurface": "map_swamp_hut_mers"
   }
 }

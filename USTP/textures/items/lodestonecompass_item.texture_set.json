@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "lodestonecompass_item",
-    "metalness_emissive_roughness_subsurface": "lodestonecompass_item_mers",
-    "heightmap": "lodestonecompass_item_heightmap"
+    "metalness_emissive_roughness_subsurface": "lodestonecompass_item_mers"
   }
 }

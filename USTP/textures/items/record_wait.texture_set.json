@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "record_wait",
-    "metalness_emissive_roughness_subsurface": "record_wait_mers",
-    "heightmap": "record_wait_heightmap"
+    "metalness_emissive_roughness_subsurface": "record_wait_mers"
   }
 }

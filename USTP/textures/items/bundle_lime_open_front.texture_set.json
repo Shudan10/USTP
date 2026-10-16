@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "bundle_lime_open_front",
-    "metalness_emissive_roughness_subsurface": "bundle_lime_open_front_mers",
-    "heightmap": "bundle_lime_open_front_heightmap"
+    "metalness_emissive_roughness_subsurface": "bundle_lime_open_front_mers"
   }
 }

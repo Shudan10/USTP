@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "light_blue_cushion",
-    "metalness_emissive_roughness_subsurface": "light_blue_cushion_mers",
-    "heightmap": "light_blue_cushion_heightmap"
+    "metalness_emissive_roughness_subsurface": "light_blue_cushion_mers"
   }
 }

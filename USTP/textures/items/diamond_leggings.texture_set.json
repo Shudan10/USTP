@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "diamond_leggings",
-    "metalness_emissive_roughness_subsurface": "diamond_leggings_mers",
-    "heightmap": "diamond_leggings_heightmap"
+    "metalness_emissive_roughness_subsurface": "diamond_leggings_mers"
   }
 }

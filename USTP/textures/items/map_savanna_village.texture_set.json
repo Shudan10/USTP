@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "map_savanna_village",
-    "metalness_emissive_roughness_subsurface": "map_savanna_village_mers",
-    "heightmap": "map_savanna_village_heightmap"
+    "metalness_emissive_roughness_subsurface": "map_savanna_village_mers"
   }
 }

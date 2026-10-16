@@ -2,7 +2,6 @@
   "format_version": "1.21.30",
   "minecraft:texture_set": {
     "color": "diamond_spear",
-    "metalness_emissive_roughness_subsurface": "diamond_spear_mers",
-    "heightmap": "diamond_spear_heightmap"
+    "metalness_emissive_roughness_subsurface": "diamond_spear_mers"
   }
 }
