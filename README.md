@@ -1,6 +1,6 @@
 # USTP — Ultimate Survival Texture Pack
 
-A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesigned signature blocks, block families and realistic modern weapons and armor, with **every block and every item** retextured. Ships PBR maps for **Vibrant Visuals** and **RTX**: metalness / emissive / roughness / subsurface plus a heightmap for blocks, and MERS for items.
+A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look. **About 1,750 blocks and items are fully hand-designed**; the remaining ~530 textures, which wrap complex 3D models or are drawn by the engine, get a cleaned-up 128x remaster. Ships PBR maps for **Vibrant Visuals** and **RTX**: metalness / emissive / roughness / subsurface plus a heightmap for blocks, and MERS for items.
 
 ## Install
 
@@ -25,9 +25,9 @@ A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesi
 | Batch 5 (style-picked) | 68 items, 14 blocks | 128x | `batch5.js`, all Clean Modern: ingots, gems, raw ores, nuggets, dusts and bricks; bows and crossbows with every draw stage, arrows, trident, mace; shears, buckets, fishing rods, books, lead, saddle, compass, clock and more; prismarine, sponges, every coral block |
 | Batch 6 (style-picked) | 25 blocks, 163 items | 128x / 64x | `batch6.js`: vines, lily pads, mushrooms and mushroom blocks, berry bushes, moss, glow lichen (Clean Modern); end stone, end bricks, purpur, portal frame, chorus (Clean Modern); every potion, dye, bottle, nether wart and sugar (Clean Modern, 64x, liquid colours from vanilla); every boat, chest boat, raft, minecart and sign (Natural Realistic) |
 | Batch 7 (style-picked) | 38 blocks, 23 items | 128x | `batch7.js`, all Clean Modern: ladder, iron bars, scaffolding, jukebox, note block, chiseled bookshelf, cauldron, enchanting table; red sand and red sandstone; animated sculk and sculk vein, sculk catalyst, amethyst blocks and crystals; every music disc |
-| Other blocks | ~1,560 | 128x | Remastered from vanilla by `remaster.js` |
-| Other items | ~550 | 64x | Remastered from vanilla by `remaster.js` |
-| Block entities, worn armor | chests, beds, shulkers, armor | 8× | Remastered from vanilla by `remaster.js` |
+| Batch 8 (Clean Modern) | 510 items | 64x / 128x | `batch8.js`: every remaining item — spawn eggs, bundles, tipped arrows, explorer maps, light blocks, beds, harnesses, candles, cushions, fish buckets, door items, chains, lanterns, seeds, pottery sherds, smithing templates, banner patterns, horse and nautilus armor, empty armor slots, and ~70 one-off items. Colours sampled from vanilla |
+| Batch 9 (Clean Modern) | 297 blocks | 128x | `batch9.js`: glazed terracotta, glass pane edges, shulker tops, crimson and warped wood, bamboo, copper bulbs/grates/bars/chests, quartz variants, raw ore and netherite blocks, obsidians, bone, honey, slime, TNT, resin, cinnabar, sulfur, bee nests, dirt and grass variants, suspicious sand and gravel, cake, chests, shelves, and every remaining plant sprite |
+| Remastered (kept) | ~530 | 64x–128x | `remaster.js`: textures wrapped around complex 3D models (candles, chains, lanterns, decorated pots, dripleaves, cocoa, anvil, bell, lectern, grindstone, stonecutter, brewing stand, sniffer egg…), engine-drawn ones (water, lava, fire, portals, bubble columns), creative-only blocks, block entities (chests, beds, shulkers) and worn armor |
 
 **Equipment** is rendered from signed-distance shapes with bevelled height fields, chrome-style environment reflections, faceted diamond and glowing netherite seams (emissive in Vibrant Visuals). Blades have a centre ridge, fuller and sharpened edges; grips are leather-wrapped.
 
@@ -61,6 +61,8 @@ A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesi
 ![Badlands](previews/batch7_badlands.png)
 ![Deep caves](previews/batch7_caves.png)
 ![Music discs](previews/batch7_discs.png)
+![Batch 8 items](previews/batch8_items.png)
+![Batch 9 blocks](previews/batch9_blocks.png)
 ![Items](preview_items.png)
 ![Remastered blocks (sample)](preview_blocks.png)
 
@@ -77,7 +79,7 @@ git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks reso
 ```
 
 ```bash
-node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node remaster.js ../bedrock-samples/resource_pack && node pack.js
+node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node batch8.js ../bedrock-samples/resource_pack && node batch9.js ../bedrock-samples/resource_pack && node remaster.js ../bedrock-samples/resource_pack && node pack.js
 ```
 
 On Windows, if git complains about long paths, add `-c core.longpaths=true` to the clone.
@@ -85,6 +87,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 - `gen.js` wipes and rebuilds `USTP/` with the signature blocks, manifest and pack icon, and starts `.handmade.json`. Palettes are in the `P` and `WOOD` objects.
 - `families.js` adds the colour, wood and copper families, taking each variant's colour from vanilla.
 - `items.js` renders the equipment icons (`--sheet=<file.png>` for a contact sheet).
+- `batch8.js` and `batch9.js` redesign everything that was left, in Clean Modern, sampling each variant's colours from vanilla.
 - `batch2.js` – `batch7.js` build the style-picked families in the style recorded in `choices.json` (A Clean Modern, B Natural Realistic, C Bold). `node batchN.js --samples=choices` renders the A/B/C comparison sheets used to pick them.
 - `remaster.js` fills in every texture not listed in `.handmade.json`. `--only=<substring>` limits it to matching paths, `--sheet=<file.png>` writes a contact sheet.
 - `pack.js` zips `USTP/` into `USTP_128x.mcpack`; `node pack.js --lite` builds `USTP_64x_Lite.mcpack`, a half-resolution copy that installs as its own pack.
@@ -96,7 +99,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | `gen.js` | Signature blocks; also exports its generators |
 | `families.js` | Dye, wood and copper families |
 | `items.js` | Modern weapons, tools and armor icons; the shared item renderer |
-| `batch2.js` – `batch7.js`, `choices.json` | Style-picked families and the picks themselves |
+| `batch2.js` – `batch9.js`, `choices.json` | Style-picked families and the picks themselves |
 | `choices/` | A/B/C comparison sheets |
 | `remaster.js` | Vanilla → USTP remaster (Scale2x, Kuwahara, PBR) |
 | `imageio.js` | Dependency-free PNG/TGA reading and writing |

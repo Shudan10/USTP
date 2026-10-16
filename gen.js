@@ -645,9 +645,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP) 128x',
     description: 'Every block and item redone at 128x: natural textures with clean modern-architecture detailing. RTX & Vibrant Visuals PBR',
-    uuid: uuid('verdant-arch-header'), version: [3, 6, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [4, 0, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [3, 6, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [4, 0, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 
@@ -673,4 +673,4 @@ console.log(`Generated ${made.length} textures.`);
 
 if (require.main === module) main();
 // families.js reuses the generators for colour/wood/copper families
-module.exports = { N, Tex, S, G, hex, grad, mul, mix, tint, clamp, sstep, fbm, vnoise, h2, worley, edgeDist, rect, save, made, frame, rock, sand, planks, logSide, logTop, leaves, metalPanel, concrete, P, WOOD };
+module.exports = { N, Tex, S, G, hex, grad, mul, mix, tint, clamp, sstep, fbm, vnoise, h2, worley, edgeDist, rect, save, made, frame, rock, sand, dirt, planks, logSide, logTop, leaves, metalPanel, concrete, P, WOOD };

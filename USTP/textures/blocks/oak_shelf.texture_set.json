@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "oak_shelf",
-    "metalness_emissive_roughness_subsurface": "oak_shelf_mers",
+    "metalness_emissive_roughness": "oak_shelf_mer",
     "heightmap": "oak_shelf_heightmap"
   }
 }

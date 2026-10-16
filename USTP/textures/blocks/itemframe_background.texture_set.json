@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "itemframe_background",
-    "metalness_emissive_roughness_subsurface": "itemframe_background_mers",
+    "metalness_emissive_roughness": "itemframe_background_mer",
     "heightmap": "itemframe_background_heightmap"
   }
 }
