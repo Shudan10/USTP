@@ -20,7 +20,8 @@ A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesi
 | Block families | 135 | 128x | `families.js`: all 16 wool, terracotta, concrete powder and stained glass colours, acacia/jungle/mangrove/cherry/pale oak/poplar wood, every stripped log, leaves, copper oxidation stages |
 | Modern equipment | 66 | 128x | `items.js`: swords, pickaxes, axes, shovels, hoes and spears in all 7 tiers; chainmail, copper, iron, gold, diamond and netherite armor |
 | Batch 2 (style-picked) | 34 blocks, 69 items | 128x | `batch2.js`: deepslate (Clean Modern), Nether blocks (Bold, glowing ember seams), all food and mob drops (Clean Modern) |
-| Other blocks | ~1,870 | 128x | Remastered from vanilla by `remaster.js` |
+| Batch 3 (style-picked) | 151 blocks | 128x | `batch3.js`: every plant, flower, sapling and crop stage (Clean Modern); every door and trapdoor incl. iron and copper (Clean Modern); workstations (Natural Realistic); tuff, calcite, dripstone and mud families (Bold) |
+| Other blocks | ~1,720 | 128x | Remastered from vanilla by `remaster.js` |
 | Other items | ~780 | 64x | Remastered from vanilla by `remaster.js` |
 | Block entities, worn armor | chests, beds, shulkers, armor | 8× | Remastered from vanilla by `remaster.js` |
 
@@ -36,6 +37,10 @@ A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesi
 ![Mob drops](previews/batch2_mob_drops.png)
 ![Nether](previews/batch2_nether.png)
 ![Deepslate](previews/batch2_deepslate.png)
+![Plants](previews/batch3_plants.png)
+![Doors](previews/batch3_doors.png)
+![Workstations](previews/batch3_workstations.png)
+![Cave stones](previews/batch3_cave_stones.png)
 ![Items](preview_items.png)
 ![Remastered blocks (sample)](preview_blocks.png)
 
@@ -52,7 +57,7 @@ git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks reso
 ```
 
 ```bash
-node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node remaster.js ../bedrock-samples/resource_pack && node pack.js
+node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node remaster.js ../bedrock-samples/resource_pack && node pack.js
 ```
 
 On Windows, if git complains about long paths, add `-c core.longpaths=true` to the clone.
@@ -60,7 +65,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 - `gen.js` wipes and rebuilds `USTP/` with the signature blocks, manifest and pack icon, and starts `.handmade.json`. Palettes are in the `P` and `WOOD` objects.
 - `families.js` adds the colour, wood and copper families, taking each variant's colour from vanilla.
 - `items.js` renders the equipment icons (`--sheet=<file.png>` for a contact sheet).
-- `batch2.js` builds the style-picked families in the style recorded in `choices.json` (A Clean Modern, B Natural Realistic, C Bold). `node batch2.js --samples=choices` renders the A/B/C comparison sheets used to pick them.
+- `batch2.js` and `batch3.js` build the style-picked families in the style recorded in `choices.json` (A Clean Modern, B Natural Realistic, C Bold). `node batch2.js --samples=choices` / `node batch3.js --samples=choices` render the A/B/C comparison sheets used to pick them.
 - `remaster.js` fills in every texture not listed in `.handmade.json`. `--only=<substring>` limits it to matching paths, `--sheet=<file.png>` writes a contact sheet.
 - `pack.js` zips `USTP/` into `USTP_128x.mcpack`; `node pack.js --lite` builds `USTP_64x_Lite.mcpack`, a half-resolution copy that installs as its own pack.
 
@@ -71,7 +76,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | `gen.js` | Signature blocks; also exports its generators |
 | `families.js` | Dye, wood and copper families |
 | `items.js` | Modern weapons, tools and armor icons; the shared item renderer |
-| `batch2.js`, `choices.json` | Style-picked families and the picks themselves |
+| `batch2.js`, `batch3.js`, `choices.json` | Style-picked families and the picks themselves |
 | `choices/` | A/B/C comparison sheets |
 | `remaster.js` | Vanilla → USTP remaster (Scale2x, Kuwahara, PBR) |
 | `imageio.js` | Dependency-free PNG/TGA reading and writing |

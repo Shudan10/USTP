@@ -2,5 +2,9 @@
   "deepslate": "A",
   "nether": "C",
   "food": "A",
-  "mob_drops": "A"
+  "mob_drops": "A",
+  "plants": "A",
+  "doors": "A",
+  "workstations": "B",
+  "cave_stones": "C"
 }

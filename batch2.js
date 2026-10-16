@@ -247,7 +247,7 @@ function sheet(file, rows) { // rows: [{ key, tiles: [rgba…] }]
 }
 
 const samplesDir = (process.argv.find(a => a.startsWith('--samples=')) || '').split('=')[1];
-if (samplesDir) {
+if (samplesDir && require.main === module) {
   fs.mkdirSync(samplesDir, { recursive: true });
   for (const [fam, list] of Object.entries(BLOCK_SAMPLES)) {
     sheet(path.join(samplesDir, `choices_${fam}.png`), ['A', 'B', 'C'].map(key => ({ key, tiles: list.map(([name, fn], k) => texToRGBA(fn(key, 4000 + k * 31).bake(STYLE[key].light))) })));
@@ -627,7 +627,7 @@ const BLOCK_FAMILIES = {
 // ---------------------------------------------------------------- build the chosen styles
 //   node batch2.js <bedrock-samples/resource_pack> [--preview=<dir>]   (styles come from choices.json)
 const vanillaArg = process.argv[2] && !process.argv[2].startsWith('--') ? process.argv[2] : null;
-if (vanillaArg) {
+if (vanillaArg && require.main === module) {
   const choices = JSON.parse(fs.readFileSync(path.join(__dirname, 'choices.json'), 'utf8')), VT = path.join(vanillaArg, 'textures');
   const HANDMADE = path.join(__dirname, '.handmade.json'), listed = new Set(fs.existsSync(HANDMADE) ? JSON.parse(fs.readFileSync(HANDMADE, 'utf8')) : []);
   const previewDir = (process.argv.find(a => a.startsWith('--preview=')) || '').split('=')[1], previews = {};
@@ -669,4 +669,4 @@ function grid(file, tiles, cols) {
   fs.writeFileSync(file, pngBuf(W, H, 3, px));
 }
 
-module.exports = { STYLE, PAL, BLOCK_SAMPLES, ITEM_DESIGNS, ITEM_STYLE, ITEM_FAMILIES, BLOCK_FAMILIES, masonry, netherrack, soulSand, FOODM, ORG };
+module.exports = { STYLE, PAL, BLOCK_SAMPLES, ITEM_DESIGNS, ITEM_STYLE, ITEM_FAMILIES, BLOCK_FAMILIES, masonry, netherrack, soulSand, FOODM, ORG, surface, cellAt, sheet, grid, texToRGBA, cracksOn, motifRing };

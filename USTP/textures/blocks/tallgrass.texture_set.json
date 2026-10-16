@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "tallgrass",
-    "metalness_emissive_roughness_subsurface": "tallgrass_mers",
+    "metalness_emissive_roughness": "tallgrass_mer",
     "heightmap": "tallgrass_heightmap"
   }
 }

@@ -189,7 +189,7 @@ function render(name, parts, seed, opts = {}) {
     mers[o] = Math.round(m0 / a * 255); mers[o + 1] = Math.round(m1 / a * 255); mers[o + 2] = Math.round(m2 / a * 255); mers[o + 3] = 255;
   }
   // dark rim on the silhouette so icons read at small sizes (thick ink line for the bold style)
-  const rimW = style === 'bold' ? 3 : 1, rimK = style === 'bold' ? 0.12 : style === 'realistic' ? 0.72 : 0.55, solid = rgba.map((v, k) => (k % 4 === 3 ? v : 0));
+  const rimW = opts.rimW ?? (style === 'bold' ? 3 : 1), rimK = style === 'bold' ? 0.12 : style === 'realistic' ? 0.72 : 0.55, solid = rgba.map((v, k) => (k % 4 === 3 ? v : 0));
   const out = (xx, yy) => xx < 0 || yy < 0 || xx >= N || yy >= N || !solid[(yy * N + xx) * 4 + 3];
   for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
     const o = (y * N + x) * 4; if (!rgba[o + 3]) continue;
@@ -197,7 +197,7 @@ function render(name, parts, seed, opts = {}) {
     for (let d = 1; d <= rimW && !near; d++) near = out(x - d, y) || out(x + d, y) || out(x, y - d) || out(x, y + d);
     if (near) for (let c = 0; c < 3; c++) rgba[o + c] = Math.round(rgba[o + c] * rimK);
   }
-  if (opts.write === false) return rgba;
+  if (opts.write === false) return opts.withMers ? { rgba, mers } : rgba;   // plants reuse the renderer for block sprites
   fs.mkdirSync(path.dirname(path.join(OUT, name)), { recursive: true });
   writeFile(path.join(OUT, name + '.png'), pngBuf(N, N, 4, rgba));
   writeFile(path.join(OUT, name + '_mers.png'), pngBuf(N, N, 4, mers));
