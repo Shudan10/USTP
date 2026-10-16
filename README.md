@@ -79,7 +79,7 @@ git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks reso
 ```
 
 ```bash
-node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node batch8.js ../bedrock-samples/resource_pack && node batch9.js ../bedrock-samples/resource_pack && node remaster.js ../bedrock-samples/resource_pack && node pack.js
+node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node batch2.js ../bedrock-samples/resource_pack && node batch3.js ../bedrock-samples/resource_pack && node batch4.js ../bedrock-samples/resource_pack && node batch5.js ../bedrock-samples/resource_pack && node batch6.js ../bedrock-samples/resource_pack && node batch7.js ../bedrock-samples/resource_pack && node batch8.js ../bedrock-samples/resource_pack && node batch9.js ../bedrock-samples/resource_pack && node sandcut.js && node stonecut.js && node remaster.js ../bedrock-samples/resource_pack && node pack.js
 ```
 
 On Windows, if git complains about long paths, add `-c core.longpaths=true` to the clone.
@@ -98,6 +98,7 @@ On Windows, if git complains about long paths, add `-c core.longpaths=true` to t
 | --- | --- |
 | `gen.js` | Signature blocks; also exports its generators |
 | `families.js` | Dye, wood and copper families |
+| `sandcut.js`, `stonecut.js` | Cut sandstone and cut-stone styles; applied when `choices.json` names one ("cut_sandstone", "cut_stone") |
 | `planks.js` | Plank styles; the one named in `choices.json` ("planks") is used for every plank block |
 | `items.js` | Modern weapons, tools and armor icons; the shared item renderer |
 | `batch2.js` – `batch9.js`, `choices.json` | Style-picked families and the picks themselves |
