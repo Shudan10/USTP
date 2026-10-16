@@ -21,8 +21,10 @@ const FOLDERS = [
   { dir: 'entity/chest', mode: 'entity' },
   { dir: 'entity/bed', mode: 'entity' },
   { dir: 'entity/shulker', mode: 'entity' },
+  { dir: 'models/armor', mode: 'entity' },
 ];
-const TARGET = 128;               // pixels per block face / item icon
+const TARGET = 128;               // pixels per block face
+const ITEM_TARGET = 64;           // item icons: all ~900 share one atlas, which overflowed (pink icons) at 128
 const ANIM_TARGET = 64;           // per-frame size for animated flipbook strips
 const PBR_SUFFIX = /_(mers|mer|heightmap)$/;   // fallback when no texture set names the map
 
@@ -87,6 +89,37 @@ function upscale(img, f, wrapMode, keepRGB) {
 }
 
 // ---------------------------------------------------------------- styling
+// Kuwahara filter: each pixel takes the mean of whichever neighbouring quadrant is flattest, which melts
+// vanilla's pixel noise into clean flat surfaces while keeping shape edges crisp (the modern look).
+// Works on premultiplied colour via summed-area tables; tiles wrap, strips clamp, items fade to transparent.
+function kuwahara(ch, alpha, w, h, R, wrapMode, frameH) {
+  const W = w + 2 * R + 1, H = h + 2 * R + 1, sat = Array.from({ length: 6 }, () => new Float64Array(W * H));
+  const wrapAll = wrapMode && frameH === h;
+  for (let py = 1; py < H; py++) for (let px = 1; px < W; px++) {
+    const x = px - 1 - R, y = py - 1 - R;
+    let i;
+    if (wrapAll) i = (((y % h) + h) % h) * w + ((x % w) + w) % w;
+    else if (wrapMode) i = Math.min(h - 1, Math.max(0, y)) * w + Math.min(w - 1, Math.max(0, x));
+    else i = x < 0 || y < 0 || x >= w || y >= h ? -1 : y * w + x;
+    const r = i < 0 ? 0 : ch[0][i], g = i < 0 ? 0 : ch[1][i], b = i < 0 ? 0 : ch[2][i], a = i < 0 ? 0 : alpha[i];
+    const l = 0.299 * r + 0.587 * g + 0.114 * b, o = py * W + px, vals = [r, g, b, a, l, l * l];
+    for (let k = 0; k < 6; k++) sat[k][o] = vals[k] + sat[k][o - W] + sat[k][o - 1] - sat[k][o - W - 1];
+  }
+  const box = (k, x0, y0, x1, y1) => sat[k][y1 * W + x1] - sat[k][(y0 - 1) * W + x1] - sat[k][y1 * W + x0 - 1] + sat[k][(y0 - 1) * W + x0 - 1];
+  const area = (R + 1) * (R + 1), c = [new Float32Array(w * h), new Float32Array(w * h), new Float32Array(w * h)], oa = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const X = x + R + 1, Y = y + R + 1;
+    let best = Infinity, q;
+    for (const Q of [[X - R, Y - R, X, Y], [X, Y - R, X + R, Y], [X - R, Y, X, Y + R], [X, Y, X + R, Y + R]]) {
+      const m = box(4, ...Q) / area, v = box(5, ...Q) / area - m * m;
+      if (v < best) { best = v; q = Q; }
+    }
+    const i = y * w + x;
+    for (let k = 0; k < 3; k++) c[k][i] = box(k, ...q) / area;
+    oa[i] = box(3, ...q) / area;
+  }
+  return { c, a: oa };
+}
 function blur(src, w, h, R, wrapMode, frameH) {
   const tmp = new Float32Array(w * h), out = new Float32Array(w * h), at = addr(w, h, wrapMode, frameH);
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -103,24 +136,20 @@ function stylize(img, mode, seed, scale, mask) {
   // a tint-mask TGA keeps meaningful colour under alpha 0, so treat it as fully opaque while styling
   const alpha = new Float32Array(n); for (let i = 0; i < n; i++) alpha[i] = mask ? 1 : data[i * 4 + 3] / 255;
   const ch = [0, 1, 2].map(k => { const a = new Float32Array(n); for (let i = 0; i < n; i++) a[i] = data[i * 4 + k] / 255 * alpha[i]; return a; });
-  const R = Math.max(1, Math.round(scale / (tile ? 3 : 4)));
-  // soften the pixel grid into painted shapes (premultiplied so transparent pixels don't bleed in)
-  const ba = blur(alpha, w, h, R, tile, frameH), bc = ch.map(c => blur(c, w, h, R, tile, frameH));
-  const soft = tile ? 0.5 : 0.35;
+  const R = Math.max(1, Math.round(scale / 3));
+  // modern clean-up: Kuwahara flattens the pixel noise, then a 1px blur takes the stair-steps off its quadrant seams
+  const kw = kuwahara(ch, alpha, w, h, Math.max(1, Math.round(scale * (tile ? 0.5 : 0.6))), tile, frameH);
+  const sm = [...kw.c.map(c => blur(c, w, h, 1, tile, frameH)), blur(kw.a, w, h, 1, tile, frameH)];
   const lum = new Float32Array(n), col = [new Float32Array(n), new Float32Array(n), new Float32Array(n)];
   for (let i = 0; i < n; i++) {
-    const a = alpha[i] || 1;
-    for (let k = 0; k < 3; k++) {
-      const sharp = ch[k][i] / a, smooth = ba[i] > 0.001 ? bc[k][i] / ba[i] : sharp;
-      col[k][i] = alpha[i] > 0 ? lerp(sharp, smooth, soft) : 0;
-    }
+    for (let k = 0; k < 3; k++) col[k][i] = alpha[i] > 0 ? (sm[3][i] > 0.001 ? sm[k][i] / sm[3][i] : ch[k][i] / alpha[i]) : 0;
     lum[i] = 0.299 * col[0][i] + 0.587 * col[1][i] + 0.114 * col[2][i];
   }
   // height: broad luminance relief + fine natural grain
   const hb = blur(lum, w, h, Math.max(1, R), tile, frameH), height = new Float32Array(n);
   let lo = 1, hi = 0;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x; height[i] = hb[i] * 0.8 + fbm(x, y % frameH, 16, seed) * 0.2;
+    const i = y * w + x; height[i] = hb[i] * 0.95 + fbm(x, y % frameH, 16, seed) * 0.05;
     if (alpha[i] > 0) { lo = Math.min(lo, height[i]); hi = Math.max(hi, height[i]); }
   }
   for (let i = 0; i < n; i++) height[i] = alpha[i] > 0 ? 0.25 + 0.5 * (height[i] - lo) / (hi - lo || 1) : 0;
@@ -133,8 +162,8 @@ function stylize(img, mode, seed, scale, mask) {
     const i = y * w + x;
     if (alpha[i] === 0) continue;
     const dx = H(x + 1, y, y) - H(x - 1, y, y), dy = H(x, y + 1, y) - H(x, y - 1, y);
-    let k = 1 - (dx + dy) * (tile ? 2.2 : 1.6) + (height[i] - hs[i]) * 1.1;
-    k *= 1 + (fbm(x, y % frameH, 32, seed + 7) - 0.5) * 0.08 + (h2(seed, x, y) - 0.5) * 0.035;
+    let k = 1 - (dx + dy) * (tile ? 1.1 : 1.4) + (height[i] - hs[i]) * 0.6;
+    k *= 1 + (fbm(x, y % frameH, 32, seed + 7) - 0.5) * 0.05 + (h2(seed, x, y) - 0.5) * 0.02;
     if (!tile) { // crisp modern icon edges: top-left rim light, bottom-right shade, darker silhouette
       if (A(x - edge, y - edge, y) < 0.5) k *= 1.14;
       if (A(x + edge, y + edge, y) < 0.5) k *= 0.82;
@@ -144,10 +173,10 @@ function stylize(img, mode, seed, scale, mask) {
     let r = col[0][i] * k, g = col[1][i] * k, b = col[2][i] * k;
     // vibrant grade: lift saturation of coloured pixels only (greyscale tint masks stay neutral), gentle contrast
     const L = 0.299 * r + 0.587 * g + 0.114 * b, s = Math.max(r, g, b) - Math.min(r, g, b);
-    if (s > 0.05) { const v = 1 + 0.22 * (1 - s); r = L + (r - L) * v; g = L + (g - L) * v; b = L + (b - L) * v; }
-    r = (r - 0.5) * 1.05 + 0.5; g = (g - 0.5) * 1.05 + 0.5; b = (b - 0.5) * 1.05 + 0.5;
+    if (s > 0.05) { const v = 1 + 0.25 * (1 - s); r = L + (r - L) * v; g = L + (g - L) * v; b = L + (b - L) * v; }
+    r = (r - 0.5) * 1.08 + 0.5; g = (g - 0.5) * 1.08 + 0.5; b = (b - 0.5) * 1.08 + 0.5;
     out[i * 4] = Math.round(clamp(r) * 255); out[i * 4 + 1] = Math.round(clamp(g) * 255); out[i * 4 + 2] = Math.round(clamp(b) * 255);
-    out[i * 4 + 3] = mode === 'item' ? (alpha[i] >= 0.5 ? 255 : 0) : data[i * 4 + 3];
+    out[i * 4 + 3] = mode === 'item' && !mask ? (alpha[i] >= 0.5 ? 255 : 0) : data[i * 4 + 3];
   }
   return { img: { w, h, data: out }, height };
 }
@@ -157,7 +186,9 @@ function walk(dir) {
   if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
 }
-const handMade = new Set(walk(path.join(OUT, 'blocks')).filter(f => /\.(png|tga)$/.test(f)).map(f => path.relative(OUT, f).replace(/\.(png|tga)$/, '').split(path.sep).join('/')));
+const HANDMADE = path.join(__dirname, '.handmade.json');
+const handMade = new Set(fs.existsSync(HANDMADE) ? JSON.parse(fs.readFileSync(HANDMADE, 'utf8')) : []);
+if (!handMade.size) console.warn('No .handmade.json found: run gen.js and items.js first, or hand-made textures will be overwritten.');
 const stats = { color: 0, pbr: 0, skipped: 0, failed: [] };
 const sheetItems = [];
 
@@ -182,8 +213,9 @@ for (const { dir, mode } of FOLDERS) {
       const src = readImage(file), frame = Math.min(src.w, src.h > src.w && src.h % src.w === 0 ? src.w : src.h);
       // animated strips (water, lava, fire, portals…) hold every frame in the atlas, so keep them at 64x
       const animated = src.h > src.w && src.h % src.w === 0;
-      const f = mode === 'entity' ? 8 : Math.max(1, Math.min(8, (animated ? ANIM_TARGET : TARGET) / frame));
-      const mask = mode === 'tile' && isTintMask(src);
+      const target = mode === 'item' ? ITEM_TARGET : animated ? ANIM_TARGET : TARGET;
+      const f = mode === 'entity' ? 8 : Math.max(1, Math.min(8, target / frame));
+      const mask = isTintMask(src);   // grass sides, leather armour…: alpha marks tint/dye areas, not cut-outs
       const big = upscale(src, f, mode === 'tile', mask);
       const seed = seedOf(rel), { img, height } = stylize(big, mode, seed, f, mask);
       writeImage(path.join(OUT, rel + path.extname(file)), img, mode === 'item');
@@ -192,7 +224,7 @@ for (const { dir, mode } of FOLDERS) {
 
       // Vibrant Visuals / RTX: carry over Mojang's MERS for this texture, add our heightmap
       const setFile = base + '.texture_set.json';
-      if (mode !== 'entity' && fs.existsSync(setFile)) {
+      if (fs.existsSync(setFile)) {
         const set = JSON.parse(fs.readFileSync(setFile, 'utf8'))['minecraft:texture_set'] || {};
         const name = path.basename(base), ts = { color: set.color ?? name };
         const merKey = ['metalness_emissive_roughness_subsurface', 'metalness_emissive_roughness'].find(k => k in set);

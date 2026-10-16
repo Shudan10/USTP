@@ -360,9 +360,9 @@ function ore(t, s, oreP, o) {
   });
 }
 function metalPanel(t, s, pal, o = {}) {
-  const T = 64;
+  const T = o.tile || 64;
   return t.each((x, y, i) => {
-    const lx = x % T, ly = y % T, d = edgeDist(x, y, T), tile = (x / T | 0) + (y / T | 0) * 2;
+    const lx = x % T, ly = y % T, d = edgeDist(x, y, T), tile = (x / T | 0) + (y / T | 0) * (N / T);
     const brush = fbm(x, y, 1, 48, 3, s + tile * 7) * 0.7 + fbm(x, y, 4, 4, 3, s + 3) * 0.3;
     let v = 0.32 + brush * 0.5, h = 0.75;
     if (d < 2) { v = 0.1; h = 0.15; } else if (d < 5) { h = 0.4 + (d - 2) / 3 * 0.35; v += lx < ly ? 0.08 : -0.04; }
@@ -409,6 +409,7 @@ function sand(t, s, pal) {
 }
 
 // ---------------------------------------------------------------- build
+function main() {
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(BLK, { recursive: true });
 
@@ -644,9 +645,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP) 128x',
     description: 'Every block and item redone at 128x: natural textures with clean modern-architecture detailing. RTX & Vibrant Visuals PBR',
-    uuid: uuid('verdant-arch-header'), version: [2, 2, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [3, 0, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [2, 2, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [3, 0, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 
@@ -665,4 +666,11 @@ function sheet(names, cols, scale = 1) {
 }
 fs.writeFileSync(path.join(OUT, 'pack_icon.png'), sheet(['grass_side_carried', 'quartz_block_side', 'planks_oak', 'stonebrick'], 2));
 fs.writeFileSync(path.join(ROOT, 'preview.png'), sheet(made.map(m => m.name).filter(n => !n.endsWith('_opaque')), 12));
+// remaster.js leaves everything listed here alone (items.js appends its icons)
+fs.writeFileSync(path.join(ROOT, '.handmade.json'), JSON.stringify(made.map(m => 'blocks/' + m.name), null, 1));
 console.log(`Generated ${made.length} textures.`);
+}
+
+if (require.main === module) main();
+// families.js reuses the generators for colour/wood/copper families
+module.exports = { N, Tex, S, G, hex, grad, mul, mix, tint, clamp, sstep, fbm, vnoise, h2, worley, edgeDist, rect, save, made, frame, rock, sand, planks, logSide, logTop, leaves, metalPanel, concrete, P, WOOD };

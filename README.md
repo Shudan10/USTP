@@ -1,6 +1,6 @@
 # USTP — Ultimate Survival Texture Pack
 
-A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic look with clean modern-architecture detailing. **Every block and every item** is retextured, and ships PBR maps for **Vibrant Visuals** and **RTX**: metalness / emissive / roughness / subsurface plus a heightmap for blocks, and MERS for items.
+A 128×128 Minecraft **Bedrock** resource pack with a clean, modern look: redesigned signature blocks, block families and realistic modern weapons and armor, with **every block and every item** retextured. Ships PBR maps for **Vibrant Visuals** and **RTX**: metalness / emissive / roughness / subsurface plus a heightmap for blocks, and MERS for items.
 
 ## Install
 
@@ -14,18 +14,23 @@ A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic lo
 
 ## What's in it
 
-| Set | Count | How it's made |
-| --- | --- | --- |
-| Signature blocks | 114 | Hand-designed procedurally in `gen.js`: stone family, dirt/grass, woods, ores, storage blocks, quartz, concrete, glass, utility blocks |
-| Everything else — blocks | ~1,200 | Remastered from vanilla to 128x by `remaster.js` |
-| Items (inventory icons) | ~900 | Remastered from vanilla to 128x by `remaster.js` |
-| Block entities | chests, beds, shulker boxes | Remastered to 8× resolution |
+| Set | Count | Size | How it's made |
+| --- | --- | --- | --- |
+| Signature blocks | 114 | 128x | Hand-designed procedurally in `gen.js`: stone family, dirt/grass, oak/spruce/birch/dark oak, ores, storage blocks, quartz, concrete, glass, utility blocks |
+| Block families | 135 | 128x | `families.js`: all 16 wool, terracotta, concrete powder and stained glass colours, acacia/jungle/mangrove/cherry/pale oak/poplar wood, every stripped log, leaves, copper oxidation stages |
+| Modern equipment | 66 | 128x | `items.js`: swords, pickaxes, axes, shovels, hoes and spears in all 7 tiers; chainmail, copper, iron, gold, diamond and netherite armor |
+| Other blocks | ~1,970 | 128x | Remastered from vanilla by `remaster.js` |
+| Other items | ~850 | 64x | Remastered from vanilla by `remaster.js` |
+| Block entities, worn armor | chests, beds, shulkers, armor | 8× | Remastered from vanilla by `remaster.js` |
 
-Animated textures (water, lava, fire, portals…) are kept at 64x per frame: every frame sits in the block atlas, so at 128x they alone doubled the pack's memory use.
+**Equipment** is rendered from signed-distance shapes with bevelled height fields, chrome-style environment reflections, faceted diamond and glowing netherite seams (emissive in Vibrant Visuals). Blades have a centre ridge, fuller and sharpened edges; grips are leather-wrapped.
 
-The remaster upscales with Scale2x (keeps pixel-art shapes crisp and rounds diagonals), then paints over the pixel grid, adds relief lighting from a generated heightmap, fine natural grain, and a vibrant colour grade that leaves biome-tinted (greyscale) textures neutral. Items get crisp silhouettes with a rim light. Mojang's own Vibrant Visuals MERS maps are upscaled alongside, so emissive, metallic and subsurface areas stay exactly where vanilla puts them.
+**Sizes:** animated textures (water, lava, fire, portals…) use 64x frames, because every frame sits in the block atlas. Item icons other than equipment are 64x: all ~900 share one atlas, which overflowed at 128x and showed as pink missing textures.
+
+**The remaster** upscales with Scale2x (crisp pixel-art shapes, rounded diagonals), then a Kuwahara filter melts vanilla's pixel noise into flat, clean surfaces with sharp edges, followed by soft relief lighting and a vibrant colour grade that leaves biome-tinted (greyscale) textures neutral. Mojang's own Vibrant Visuals MERS maps are upscaled alongside, so emissive, metallic and subsurface areas stay where vanilla puts them.
 
 ![Signature blocks](preview.png)
+![Modern equipment](preview_equipment.png)
 ![Items](preview_items.png)
 ![Remastered blocks (sample)](preview_blocks.png)
 
@@ -38,25 +43,29 @@ git clone --depth 1 --filter=blob:none --sparse https://github.com/Mojang/bedroc
 ```
 
 ```bash
-git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks resource_pack/textures/items resource_pack/textures/entity/chest resource_pack/textures/entity/bed resource_pack/textures/entity/shulker
+git -C ../bedrock-samples sparse-checkout set resource_pack/textures/blocks resource_pack/textures/items resource_pack/textures/entity/chest resource_pack/textures/entity/bed resource_pack/textures/entity/shulker resource_pack/textures/models/armor
 ```
 
 ```bash
-node gen.js && node remaster.js ../bedrock-samples/resource_pack && node pack.js
+node gen.js && node families.js ../bedrock-samples/resource_pack && node items.js && node remaster.js ../bedrock-samples/resource_pack && node pack.js
 ```
 
 On Windows, if git complains about long paths, add `-c core.longpaths=true` to the clone.
 
-- `gen.js` wipes and rebuilds `USTP/` with the hand-made set, manifest and pack icon. Palettes are in the `P` and `WOOD` objects.
-- `remaster.js` fills in every other texture (it never overwrites a hand-made one). `--only=<substring>` limits it to matching paths, `--sheet=<file.png>` writes a contact sheet.
+- `gen.js` wipes and rebuilds `USTP/` with the signature blocks, manifest and pack icon, and starts `.handmade.json`. Palettes are in the `P` and `WOOD` objects.
+- `families.js` adds the colour, wood and copper families, taking each variant's colour from vanilla.
+- `items.js` renders the equipment icons (`--sheet=<file.png>` for a contact sheet).
+- `remaster.js` fills in every texture not listed in `.handmade.json`. `--only=<substring>` limits it to matching paths, `--sheet=<file.png>` writes a contact sheet.
 - `pack.js` zips `USTP/` into `USTP_128x.mcpack`; `node pack.js --lite` builds `USTP_64x_Lite.mcpack`, a half-resolution copy that installs as its own pack.
 
 ## Layout
 
 | Path | What |
 | --- | --- |
-| `gen.js` | Procedural generator for the hand-made set |
-| `remaster.js` | Vanilla → USTP remaster (Scale2x, styling, PBR) |
+| `gen.js` | Signature blocks; also exports its generators |
+| `families.js` | Dye, wood and copper families |
+| `items.js` | Modern weapons, tools and armor icons |
+| `remaster.js` | Vanilla → USTP remaster (Scale2x, Kuwahara, PBR) |
 | `imageio.js` | Dependency-free PNG/TGA reading and writing |
 | `pack.js` | Builds the `.mcpack` files (full and `--lite`) |
 | `USTP/` | Built resource pack source |

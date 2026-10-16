@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "red_poplar_leaves",
-    "metalness_emissive_roughness_subsurface": "red_poplar_leaves_mers",
+    "metalness_emissive_roughness": "red_poplar_leaves_mer",
     "heightmap": "red_poplar_leaves_heightmap"
   }
 }

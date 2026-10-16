@@ -1,8 +1,8 @@
 {
-  "format_version": "1.21.30",
+  "format_version": "1.16.100",
   "minecraft:texture_set": {
     "color": "yellow_poplar_leaves",
-    "metalness_emissive_roughness_subsurface": "yellow_poplar_leaves_mers",
+    "metalness_emissive_roughness": "yellow_poplar_leaves_mer",
     "heightmap": "yellow_poplar_leaves_heightmap"
   }
 }
