@@ -86,10 +86,20 @@ function pngBuf(w, h, ch, px) {
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = ct;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 7 })), chunk('IEND', Buffer.alloc(0))]);
 }
+// Bottom-left origin (descriptor 0x08): the layout every vanilla Bedrock TGA uses
 function tgaBuf(w, h, rgba) {
-  const b = Buffer.alloc(18 + w * h * 4); b[2] = 2; b.writeUInt16LE(w, 12); b.writeUInt16LE(h, 14); b[16] = 32; b[17] = 0x28;
-  for (let i = 0; i < w * h; i++) { b[18 + i * 4] = rgba[i * 4 + 2]; b[19 + i * 4] = rgba[i * 4 + 1]; b[20 + i * 4] = rgba[i * 4]; b[21 + i * 4] = rgba[i * 4 + 3]; }
+  const b = Buffer.alloc(18 + w * h * 4); b[2] = 2; b.writeUInt16LE(w, 12); b.writeUInt16LE(h, 14); b[16] = 32; b[17] = 0x08;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const s = (y * w + x) * 4, o = 18 + ((h - 1 - y) * w + x) * 4;
+    b[o] = rgba[s + 2]; b[o + 1] = rgba[s + 1]; b[o + 2] = rgba[s]; b[o + 3] = rgba[s + 3];
+  }
   return b;
+}
+// Heightmaps as RGB: Bedrock never ships 1-channel PNGs and the PBR atlas builder reads them past the end
+function grayToRGB(w, h, g) {
+  const px = new Uint8Array(w * h * 3);
+  for (let i = 0; i < w * h; i++) px[i * 3] = px[i * 3 + 1] = px[i * 3 + 2] = g[i];
+  return pngBuf(w, h, 3, px);
 }
 // Windows can briefly lock a file that was just written (indexing / antivirus), so retry instead of failing
 function writeFile(file, data) {
@@ -116,4 +126,4 @@ function isTintMask(img) {
   return zero > 0 && coloured / zero > 0.6;
 }
 
-module.exports = { writeFile, readPNG, readTGA, readImage, pngBuf, tgaBuf, writeImage, isTintMask };
+module.exports = { writeFile, readPNG, readTGA, readImage, pngBuf, tgaBuf, grayToRGB, writeImage, isTintMask };

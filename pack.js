@@ -28,7 +28,7 @@ function halve(img, straight) {
 function liteImage(file, data) {
   const img = readImage(file), half = halve(img, file.endsWith('.tga') && isTintMask(img));
   if (file.endsWith('.tga')) return tgaBuf(half.w, half.h, half.data);
-  const ch = { 0: 1, 2: 3, 6: 4 }[data[25]] || 4, px = new Uint8Array(half.w * half.h * ch);
+  const ch = { 2: 3, 6: 4 }[data[25]] || 3, px = new Uint8Array(half.w * half.h * ch);
   for (let i = 0; i < half.w * half.h; i++) for (let c = 0; c < ch; c++) px[i * ch + c] = half.data[i * 4 + c];
   return pngBuf(half.w, half.h, ch, px);
 }

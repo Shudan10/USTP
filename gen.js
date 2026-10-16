@@ -2,6 +2,7 @@
 // USTP — Ultimate Survival Texture Pack: procedural Bedrock texture generator (128x, RTX + Vibrant Visuals PBR)
 // Run: node gen.js   → builds the ./USTP pack folder and ./preview.png
 const fs = require('fs'), path = require('path'), zlib = require('zlib'), crypto = require('crypto');
+const { tgaBuf, grayToRGB } = require('./imageio');
 
 const N = 128;
 const ROOT = __dirname;
@@ -105,11 +106,6 @@ function pngBuf(w, h, ch, px) {
   const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = ct;
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
 }
-function tgaBuf(w, h, rgba) {
-  const b = Buffer.alloc(18 + w * h * 4); b[2] = 2; b.writeUInt16LE(w, 12); b.writeUInt16LE(h, 14); b[16] = 32; b[17] = 0x28;
-  for (let i = 0; i < w * h; i++) { b[18 + i * 4] = rgba[i * 4 + 2]; b[19 + i * 4] = rgba[i * 4 + 1]; b[20 + i * 4] = rgba[i * 4]; b[21 + i * 4] = rgba[i * 4 + 3]; }
-  return b;
-}
 const b8 = v => Math.round(clamp(v) * 255);
 const made = [];
 function save(t, name, o = {}) {
@@ -123,7 +119,7 @@ function save(t, name, o = {}) {
   const mer = Buffer.alloc(N * N * 3), hm = Buffer.alloc(N * N);
   for (let i = 0; i < N * N; i++) { mer[i * 3] = b8(t.m[i]); mer[i * 3 + 1] = b8(t.e[i]); mer[i * 3 + 2] = b8(t.r[i]); hm[i] = b8(t.h[i]); }
   fs.writeFileSync(file + '_mer.png', pngBuf(N, N, 3, mer));
-  fs.writeFileSync(file + '_heightmap.png', pngBuf(N, N, 1, hm));
+  fs.writeFileSync(file + '_heightmap.png', grayToRGB(N, N, hm));
   const base = path.basename(name);
   fs.writeFileSync(file + '.texture_set.json', JSON.stringify({
     format_version: '1.16.100',
@@ -648,9 +644,9 @@ fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify({
   header: {
     name: 'Ultimate Survival Texture Pack (USTP) 128x',
     description: 'Every block and item redone at 128x: natural textures with clean modern-architecture detailing. RTX & Vibrant Visuals PBR',
-    uuid: uuid('verdant-arch-header'), version: [2, 1, 0], min_engine_version: [1, 21, 80],
+    uuid: uuid('verdant-arch-header'), version: [2, 2, 0], min_engine_version: [1, 21, 80],
   },
-  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [2, 1, 0] }],
+  modules: [{ type: 'resources', uuid: uuid('verdant-arch-resources'), version: [2, 2, 0] }],
   capabilities: ['pbr', 'raytraced'],
 }, null, 2));
 

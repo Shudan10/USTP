@@ -5,7 +5,7 @@
 //
 // Usage: node remaster.js <bedrock-samples/resource_pack> [--only=<substring>] [--sheet=<file.png>]
 const fs = require('fs'), path = require('path');
-const { readImage, pngBuf, writeImage, writeFile, isTintMask } = require('./imageio');
+const { readImage, pngBuf, grayToRGB, writeImage, writeFile, isTintMask } = require('./imageio');
 
 const SRC = process.argv[2];
 if (!SRC || !fs.existsSync(path.join(SRC, 'textures'))) {
@@ -24,7 +24,7 @@ const FOLDERS = [
 ];
 const TARGET = 128;               // pixels per block face / item icon
 const ANIM_TARGET = 64;           // per-frame size for animated flipbook strips
-const PBR_SUFFIX = /_(mers|mer|normal|heightmap)$/;
+const PBR_SUFFIX = /_(mers|mer|heightmap)$/;   // fallback when no texture set names the map
 
 // ---------------------------------------------------------------- noise (tileable over 128)
 const clamp = (v, a = 0, b = 1) => (v < a ? a : v > b ? b : v);
@@ -165,9 +165,18 @@ for (const { dir, mode } of FOLDERS) {
   const files = walk(path.join(SRC, 'textures', dir));
   const images = files.filter(f => /\.(png|tga)$/.test(f));
   const byBase = new Map(images.map(f => [f.replace(/\.(png|tga)$/, ''), f]));
+  // a PBR map is whatever a texture set points at for something other than colour
+  // (name suffixes alone would also catch colour textures like red_sandstone_normal)
+  const pbrMaps = new Set();
+  for (const f of files.filter(f => f.endsWith('.texture_set.json'))) {
+    try {
+      const set = JSON.parse(fs.readFileSync(f, 'utf8'))['minecraft:texture_set'] || {};
+      for (const [k, v] of Object.entries(set)) if (k !== 'color' && typeof v === 'string') pbrMaps.add(path.join(path.dirname(f), v));
+    } catch { /* malformed vanilla set: fall back to the suffix test */ }
+  }
   for (const file of images) {
     const base = file.replace(/\.(png|tga)$/, ''), rel = path.relative(path.join(SRC, 'textures'), base).split(path.sep).join('/');
-    if (PBR_SUFFIX.test(base) || (ONLY && !rel.includes(ONLY))) continue;
+    if (pbrMaps.has(base) || PBR_SUFFIX.test(base) || (ONLY && !rel.includes(ONLY))) continue;
     if (handMade.has(rel)) { stats.skipped++; continue; }
     try {
       const src = readImage(file), frame = Math.min(src.w, src.h > src.w && src.h % src.w === 0 ? src.w : src.h);
@@ -201,7 +210,7 @@ for (const { dir, mode } of FOLDERS) {
         }
         if (mode === 'tile') { // items keep vanilla's MERS-only sets; item heightmaps aren't something vanilla or RTX packs ship
           const hm = new Uint8Array(img.w * img.h); for (let i = 0; i < hm.length; i++) hm[i] = Math.round(clamp(height[i]) * 255);
-          writeFile(path.join(OUT, rel + '_heightmap.png'), pngBuf(img.w, img.h, 1, hm));
+          writeFile(path.join(OUT, rel + '_heightmap.png'), grayToRGB(img.w, img.h, hm));
           ts.heightmap = name + '_heightmap';
         }
         writeFile(path.join(OUT, rel + '.texture_set.json'), JSON.stringify({ format_version: '1.21.30', 'minecraft:texture_set': ts }, null, 2));
