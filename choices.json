@@ -18,5 +18,9 @@
   "nature": "A",
   "end": "A",
   "brewing": "A",
-  "vehicles": "B"
+  "vehicles": "B",
+  "decor": "A",
+  "badlands": "A",
+  "caves": "A",
+  "discs": "A"
 }
