@@ -1,6 +1,6 @@
 # USTP — Ultimate Survival Texture Pack
 
-A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic look with clean modern-architecture detailing. **Every block and every item** is retextured, and blocks and items ship with PBR maps (metalness / emissive / roughness / subsurface + heightmap) for **Vibrant Visuals** and **RTX**.
+A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic look with clean modern-architecture detailing. **Every block and every item** is retextured, and ships PBR maps for **Vibrant Visuals** and **RTX**: metalness / emissive / roughness / subsurface plus a heightmap for blocks, and MERS for items.
 
 ## Install
 
@@ -11,7 +11,6 @@ A 128×128 Minecraft **Bedrock** resource pack that blends a natural, organic lo
 ## Troubleshooting
 
 - **Crash when opening a world:** lower Render Distance (Settings → Video) to 32 chunks or less, and make sure only one big texture pack is active in Global Resources. If it still crashes, use the 64x Lite pack.
-- **Vibrant Visuals unavailable:** check the pack is above any other PBR pack in the active list.
 
 ## What's in it
 
